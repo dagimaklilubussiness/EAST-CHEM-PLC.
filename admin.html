@@ -4,18 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Owner panel — East Chem PLC</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body data-page="admin">
 
 <header class="site-header">
   <nav class="nav">
     <a href="index.html" class="brand">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6C14 10 8 18 8 27c0 8 7 13 16 13s16-5 16-13c0-9-6-17-16-21z" fill="#2B4327"/><path d="M24 12v24" stroke="#F1ECD9" stroke-width="1.4" stroke-linecap="round"/><circle cx="24" cy="10" r="3.4" fill="#C99A2E"/></svg>
-      <span>
-        <span class="brand-name">East Chem PLC</span>
-        <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
-      </span>
+      <img src="logo.png" alt="East Chem PLC" class="brand-logo">
+      <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
     </a>
     <ul class="nav-links">
       <li><a href="index.html" data-page="home" data-i18n="nav_home">Home</a></li>
@@ -135,9 +133,9 @@
       </table>
 
       <div style="margin-top:40px">
-        <p class="note-box" data-i18n="ad_note">Changes here save to this browser only, so you can preview them. To publish for every visitor, use Export below and replace js/products-data.js on your hosting with the downloaded file.</p>
+        <p class="note-box" data-i18n="ad_note">Changes here save to this browser only, so you can preview them. To publish for every visitor, use Export below and replace products-data.js on your hosting with the downloaded file.</p>
         <h3 data-i18n="ad_export_h">Publish your changes</h3>
-        <p data-i18n="ad_export_d">Download the current product list as a file, then upload it to your site's js/ folder, replacing products-data.js.</p>
+        <p data-i18n="ad_export_d">Download the current product list as a file, then upload it to your site's files, replacing products-data.js.</p>
         <div class="admin-toolbar">
           <button id="export-btn" class="btn btn-gold" data-i18n="ad_export_btn">Download products-data.js</button>
           <button id="import-btn" class="btn btn-outline btn-sm">Import from box below</button>
@@ -149,9 +147,9 @@
   </section>
 </div>
 
-<script src="js/i18n.js"></script>
-<script src="js/products-data.js"></script>
-<script src="js/main.js"></script>
-<script src="js/admin.js"></script>
+<script src="i18n.js"></script>
+<script src="products-data.js"></script>
+<script src="main.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>

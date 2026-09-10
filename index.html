@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>East Chem PLC — Agro-chemicals & Fertilizers</title>
 <meta name="description" content="East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia.">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body data-page="home">
 
 <header class="site-header">
   <nav class="nav">
     <a href="index.html" class="brand">
-      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6C14 10 8 18 8 27c0 8 7 13 16 13s16-5 16-13c0-9-6-17-16-21z" fill="#2B4327"/><path d="M24 12v24" stroke="#F1ECD9" stroke-width="1.4" stroke-linecap="round"/><circle cx="24" cy="10" r="3.4" fill="#C99A2E"/></svg>
-      <span>
-        <span class="brand-name">East Chem PLC</span>
-        <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
-      </span>
+      <img src="logo.png" alt="East Chem PLC" class="brand-logo">
+      <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
     </a>
     <ul class="nav-links">
       <li><a href="index.html" data-page="home" data-i18n="nav_home">Home</a></li>
@@ -35,52 +33,28 @@
   </nav>
 </header>
 
-<section class="hero">
-  <div>
-    <p class="hero-eyebrow" data-i18n="hero_eyebrow">Ethiopian-owned, farm-tested</p>
-    <h1 data-i18n="hero_title">Grown from the soil up.</h1>
-    <p class="lede" data-i18n="hero_sub">East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia — with clear guidance on what to use, and how.</p>
-    <div class="hero-actions">
-      <a href="products.html" class="btn btn-primary" data-i18n="hero_cta1">Browse products</a>
-      <a href="contact.html" class="btn btn-outline" data-i18n="hero_cta2">Talk to our team</a>
+<section class="hero-photo">
+  <div class="img-slot hero-photo-media" data-slot="hero.jpg">
+    <img src="hero.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+    <div class="img-slot-hint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-4 4-3-3-6 6"/></svg>
+      <b>hero.jpg</b>
+      <span data-i18n="slot_hero">Wide photo (1600px+) — your warehouse, a sack pile, or a green field</span>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><b data-count="12" data-suffix="+">0</b><span data-i18n="stat1_l">years in the field</span></div>
-      <div class="stat"><b data-count="40" data-suffix="+">0</b><span data-i18n="stat2_l">districts supplied</span></div>
-      <div class="stat"><b data-count="6000" data-suffix="+">0</b><span data-i18n="stat3_l">farmers reached</span></div>
+    <div class="hero-photo-overlay">
+      <p class="hero-eyebrow" data-i18n="hero_eyebrow">Ethiopian-owned, farm-tested</p>
+      <h1 data-i18n="hero_title">Grown from the soil up.</h1>
+      <p class="lede" data-i18n="hero_sub">East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia — with clear guidance on what to use, and how.</p>
+      <div class="hero-actions">
+        <a href="products.html" class="btn btn-primary" data-i18n="hero_cta1">Browse products</a>
+        <a href="contact.html" class="btn btn-outline" data-i18n="hero_cta2" style="background:rgba(255,255,255,.92)">Talk to our team</a>
+      </div>
     </div>
   </div>
-  <div class="hero-art" aria-hidden="true">
-    <svg viewBox="0 0 480 420" xmlns="http://www.w3.org/2000/svg">
-      <!-- soil mound -->
-      <ellipse cx="240" cy="360" rx="170" ry="26" fill="#E7DFC2"/>
-      <!-- molecule (fades out) -->
-      <g class="grow-mol" stroke="#8B4A2B" stroke-width="2.5">
-        <line x1="240" y1="180" x2="300" y2="145"/>
-        <line x1="300" y1="145" x2="300" y2="215"/>
-        <line x1="300" y1="215" x2="240" y2="250"/>
-        <line x1="240" y1="250" x2="180" y2="215"/>
-        <line x1="180" y1="215" x2="180" y2="145"/>
-        <line x1="180" y1="145" x2="240" y2="180"/>
-        <circle cx="240" cy="180" r="11" fill="#C99A2E"/>
-        <circle cx="300" cy="145" r="11" fill="#8B4A2B"/>
-        <circle cx="300" cy="215" r="11" fill="#C99A2E"/>
-        <circle cx="240" cy="250" r="11" fill="#8B4A2B"/>
-        <circle cx="180" cy="215" r="11" fill="#C99A2E"/>
-        <circle cx="180" cy="145" r="11" fill="#8B4A2B"/>
-      </g>
-      <!-- leaf / plant (grows in) -->
-      <g class="grow-leaf">
-        <path d="M240 360 C 236 300 236 250 240 205" stroke="#2B4327" stroke-width="5" fill="none" stroke-linecap="round"/>
-        <path d="M240 270 C 200 255 178 225 172 190 C 216 196 244 222 250 262 Z" fill="#3E5C38"/>
-        <path d="M240 240 C 280 222 302 194 308 160 C 264 168 238 194 232 232 Z" fill="#2B4327"/>
-        <path d="M240 320 C 205 306 186 280 180 250 C 220 256 245 280 250 314 Z" fill="#7E9E3B"/>
-      </g>
-      <!-- drop -->
-      <g class="grow-drop">
-        <path d="M340 110 C 340 122 331 130 322 130 C 313 130 304 122 304 110 C 304 98 322 78 322 78 C 322 78 340 98 340 110 Z" fill="#C99A2E"/>
-      </g>
-    </svg>
+  <div class="hero-stats-card">
+    <div class="stat"><b data-count="12" data-suffix="+">0</b><span data-i18n="stat1_l">years in the field</span></div>
+    <div class="stat"><b data-count="40" data-suffix="+">0</b><span data-i18n="stat2_l">districts supplied</span></div>
+    <div class="stat"><b data-count="6000" data-suffix="+">0</b><span data-i18n="stat3_l">farmers reached</span></div>
   </div>
 </section>
 
@@ -88,50 +62,46 @@
   <div class="container">
     <h2 data-i18n="cat_heading">What we supply</h2>
     <p class="lede" data-i18n="cat_sub">Four lines, one goal: healthier fields and better yields.</p>
-    <div class="strip-list">
-      <a href="products.html?cat=fertilizer" class="strip">
-        <div class="strip-main">
-          <span class="strip-bar" style="background:var(--leaf)"></span>
-          <svg class="strip-icon" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="#EEF3E2"/><path d="M22 12v20M14 20l8-8 8 8" stroke="#7E9E3B" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <div class="strip-body">
-            <h3 data-i18n="cat_fert_t">Fertilizers</h3>
-            <p data-i18n="cat_fert_d">NPK blends, urea and DAP for every soil and crop cycle.</p>
-          </div>
+    <div class="cat-photo-grid">
+      <a href="products.html?cat=fertilizer" class="cat-photo-card">
+        <div class="img-slot" data-slot="cat-fertilizer.jpg">
+          <img src="cat-fertilizer.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>cat-fertilizer.jpg</b><span data-i18n="slot_cat_fert">Photo of fertilizer sacks — NPS, Urea, DAP</span></div>
         </div>
-        <span class="strip-go" data-i18n="strip_view">View products</span>
+        <div class="cat-photo-label">
+          <h3 data-i18n="cat_fert_t">Fertilizers</h3>
+          <span data-i18n="strip_view">View products</span>
+        </div>
       </a>
-      <a href="products.html?cat=herbicide" class="strip">
-        <div class="strip-main">
-          <span class="strip-bar" style="background:var(--rust)"></span>
-          <svg class="strip-icon" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="#F3E9E2"/><path d="M22 32V16M16 22c0-4 3-7 6-7s6 3 6 7M22 16c0-4-2-7-2-7M22 16c0-4 2-7 2-7" stroke="#8B4A2B" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
-          <div class="strip-body">
-            <h3 data-i18n="cat_herb_t">Herbicides</h3>
-            <p data-i18n="cat_herb_d">Selective and broad-spectrum weed control.</p>
-          </div>
+      <a href="products.html?cat=herbicide" class="cat-photo-card">
+        <div class="img-slot" data-slot="cat-herbicide.jpg">
+          <img src="cat-herbicide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>cat-herbicide.jpg</b><span data-i18n="slot_cat_herb">Photo of herbicide bottles, or a freshly sprayed field</span></div>
         </div>
-        <span class="strip-go" data-i18n="strip_view">View products</span>
+        <div class="cat-photo-label">
+          <h3 data-i18n="cat_herb_t">Herbicides</h3>
+          <span data-i18n="strip_view">View products</span>
+        </div>
       </a>
-      <a href="products.html?cat=pesticide" class="strip">
-        <div class="strip-main">
-          <span class="strip-bar" style="background:#7A5AA8"></span>
-          <svg class="strip-icon" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="#EDE7F4"/><ellipse cx="22" cy="24" rx="8" ry="5" stroke="#7A5AA8" stroke-width="2.2" fill="none"/><path d="M14 24h-4M34 24h-4M17 18l-3-3M27 18l3-3" stroke="#7A5AA8" stroke-width="2" stroke-linecap="round"/></svg>
-          <div class="strip-body">
-            <h3 data-i18n="cat_pest_t">Pesticides</h3>
-            <p data-i18n="cat_pest_d">Insect and pest control for field and store.</p>
-          </div>
+      <a href="products.html?cat=pesticide" class="cat-photo-card">
+        <div class="img-slot" data-slot="cat-pesticide.jpg">
+          <img src="cat-pesticide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>cat-pesticide.jpg</b><span data-i18n="slot_cat_pest">Photo of pesticide bottles, or spraying in action</span></div>
         </div>
-        <span class="strip-go" data-i18n="strip_view">View products</span>
+        <div class="cat-photo-label">
+          <h3 data-i18n="cat_pest_t">Pesticides</h3>
+          <span data-i18n="strip_view">View products</span>
+        </div>
       </a>
-      <a href="products.html?cat=fungicide" class="strip">
-        <div class="strip-main">
-          <span class="strip-bar" style="background:var(--gold)"></span>
-          <svg class="strip-icon" viewBox="0 0 44 44"><circle cx="22" cy="22" r="20" fill="#F7EFD9"/><circle cx="22" cy="20" r="7" stroke="#C99A2E" stroke-width="2.2" fill="none"/><path d="M22 27v6M18 33h8" stroke="#C99A2E" stroke-width="2.2" stroke-linecap="round"/></svg>
-          <div class="strip-body">
-            <h3 data-i18n="cat_fung_t">Fungicides</h3>
-            <p data-i18n="cat_fung_d">Disease protection for grain, root and vegetable crops.</p>
-          </div>
+      <a href="products.html?cat=fungicide" class="cat-photo-card">
+        <div class="img-slot" data-slot="cat-fungicide.jpg">
+          <img src="cat-fungicide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>cat-fungicide.jpg</b><span data-i18n="slot_cat_fung">Photo of fungicide packs, or treated crop leaves</span></div>
         </div>
-        <span class="strip-go" data-i18n="strip_view">View products</span>
+        <div class="cat-photo-label">
+          <h3 data-i18n="cat_fung_t">Fungicides</h3>
+          <span data-i18n="strip_view">View products</span>
+        </div>
       </a>
     </div>
   </div>
@@ -188,6 +158,32 @@
   <div class="container">
     <h2 data-i18n="feat_heading">Popular right now</h2>
     <div class="product-grid" id="featured-grid"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="container">
+    <h2 data-i18n="gallery_h">A look at East Chem</h2>
+    <div class="gallery-grid">
+      <div>
+        <div class="img-slot" data-slot="gallery-1.jpg">
+          <img src="gallery-1.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>gallery-1.jpg</b><span data-i18n="slot_gallery1">Your shop front, warehouse or delivery truck</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="img-slot" data-slot="gallery-2.jpg">
+          <img src="gallery-2.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>gallery-2.jpg</b><span data-i18n="slot_gallery2">Staff or farmers at work</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="img-slot" data-slot="gallery-3.jpg">
+          <img src="gallery-3.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+          <div class="img-slot-hint"><b>gallery-3.jpg</b><span data-i18n="slot_gallery3">A healthy field or harvest</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -266,9 +262,9 @@
   </div>
 </div>
 
-<script src="js/i18n.js"></script>
-<script src="js/products-data.js"></script>
-<script src="js/main.js"></script>
+<script src="i18n.js"></script>
+<script src="products-data.js"></script>
+<script src="main.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();
   const fl = document.getElementById("footer-lang");

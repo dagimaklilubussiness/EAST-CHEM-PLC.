@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner panel — East Chem PLC</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="admin">
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6C14 10 8 18 8 27c0 8 7 13 16 13s16-5 16-13c0-9-6-17-16-21z" fill="#2B4327"/><path d="M24 12v24" stroke="#F1ECD9" stroke-width="1.4" stroke-linecap="round"/><circle cx="24" cy="10" r="3.4" fill="#C99A2E"/></svg>
+      <span>
+        <span class="brand-name">East Chem PLC</span>
+        <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
+      </span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-page="home" data-i18n="nav_home">Home</a></li>
+      <li><a href="products.html" data-page="products" data-i18n="nav_products">Products</a></li>
+      <li><a href="about.html" data-page="about" data-i18n="nav_about">About</a></li>
+      <li><a href="contact.html" data-page="contact" data-i18n="nav_contact">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-switch">
+        <button class="lang-btn" aria-haspopup="true"><span class="lang-current">EN</span> ▾</button>
+        <div class="lang-menu"></div>
+      </div>
+      <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+</header>
+
+<div id="admin-gate" class="admin-gate">
+  <h1 data-i18n="ad_gate_h">Owner area</h1>
+  <p class="note-box" data-i18n="ad_gate_p">This is a simple access gate, not real security — don't reuse a sensitive password here.</p>
+  <form id="gate-form">
+    <div class="field">
+      <label for="gate-code" data-i18n="ad_pass">Access code</label>
+      <input id="gate-code" name="code" type="password" required>
+    </div>
+    <p id="gate-error" hidden style="color:#7a2c22" data-i18n="ad_wrong">That code didn't match.</p>
+    <button type="submit" class="btn btn-primary" data-i18n="ad_enter">Enter</button>
+  </form>
+</div>
+
+<div id="admin-wrap" class="admin-wrap">
+  <section class="band-tight">
+    <div class="container">
+      <div class="admin-toolbar" style="justify-content:space-between">
+        <h1 data-i18n="ad_dash_h" style="margin:0">Manage products</h1>
+        <div style="display:flex;gap:10px">
+          <button id="add-product-btn" class="btn btn-primary" data-i18n="ad_add">Add product</button>
+          <button id="logout-btn" class="btn btn-outline" data-i18n="ad_logout">Log out</button>
+        </div>
+      </div>
+
+      <div id="admin-form-panel" class="admin-form" style="display:none">
+        <h3 id="form-title" data-i18n="ad_form_new">New product</h3>
+        <form id="product-form">
+          <div class="grid2">
+            <div class="field">
+              <label for="f-cat" data-i18n="ad_f_cat">Category</label>
+              <select id="f-cat" name="category">
+                <option value="fertilizer" data-i18n="cat_fert_t">Fertilizers</option>
+                <option value="herbicide" data-i18n="cat_herb_t">Herbicides</option>
+                <option value="pesticide" data-i18n="cat_pest_t">Pesticides</option>
+                <option value="fungicide" data-i18n="cat_fung_t">Fungicides</option>
+                <option value="seed" data-i18n="cat_seed_t">Seed treatments</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-img" data-i18n="ad_f_img">Image URL (optional)</label>
+              <input id="f-img" name="image" type="url" placeholder="https://…">
+            </div>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" name="featured" style="width:auto;display:inline-block"> <span data-i18n="ad_f_featured">Show in "Popular right now" on the homepage</span></label>
+          </div>
+
+          <div class="lang-tab-bar" id="lang-tab-bar">
+            <button type="button" class="lang-tab active" data-lang="en">English</button>
+            <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+            <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+            <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+          </div>
+
+          <div id="lang-panes">
+            <div class="lang-pane active" data-lang="en">
+              <div class="field"><label data-i18n="ad_f_name">Product name</label><input name="name_en"></div>
+              <div class="field"><label data-i18n="ad_f_desc">Short description</label><textarea name="desc_en"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_material">Active material / composition</label><input name="material_en"></div>
+              <div class="field"><label data-i18n="ad_f_usage">Usage instructions</label><textarea name="usage_en"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_pack">Package sizes (e.g. 25kg, 50kg)</label><input name="pack_en"></div>
+            </div>
+            <div class="lang-pane" data-lang="am">
+              <div class="field"><label data-i18n="ad_f_name">Product name</label><input name="name_am"></div>
+              <div class="field"><label data-i18n="ad_f_desc">Short description</label><textarea name="desc_am"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_material">Active material / composition</label><input name="material_am"></div>
+              <div class="field"><label data-i18n="ad_f_usage">Usage instructions</label><textarea name="usage_am"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_pack">Package sizes</label><input name="pack_am"></div>
+            </div>
+            <div class="lang-pane" data-lang="om">
+              <div class="field"><label data-i18n="ad_f_name">Product name</label><input name="name_om"></div>
+              <div class="field"><label data-i18n="ad_f_desc">Short description</label><textarea name="desc_om"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_material">Active material / composition</label><input name="material_om"></div>
+              <div class="field"><label data-i18n="ad_f_usage">Usage instructions</label><textarea name="usage_om"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_pack">Package sizes</label><input name="pack_om"></div>
+            </div>
+            <div class="lang-pane" data-lang="ti">
+              <div class="field"><label data-i18n="ad_f_name">Product name</label><input name="name_ti"></div>
+              <div class="field"><label data-i18n="ad_f_desc">Short description</label><textarea name="desc_ti"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_material">Active material / composition</label><input name="material_ti"></div>
+              <div class="field"><label data-i18n="ad_f_usage">Usage instructions</label><textarea name="usage_ti"></textarea></div>
+              <div class="field"><label data-i18n="ad_f_pack">Package sizes</label><input name="pack_ti"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button type="submit" class="btn btn-primary" data-i18n="ad_save">Save product</button>
+            <button type="button" id="cancel-form-btn" class="btn btn-outline" data-i18n="ad_cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <table class="admin-table">
+        <thead><tr>
+          <th data-i18n="ad_th_name">Name</th>
+          <th data-i18n="ad_th_cat">Category</th>
+          <th data-i18n="ad_th_actions">Actions</th>
+        </tr></thead>
+        <tbody id="admin-tbody"></tbody>
+      </table>
+
+      <div style="margin-top:40px">
+        <p class="note-box" data-i18n="ad_note">Changes here save to this browser only, so you can preview them. To publish for every visitor, use Export below and replace js/products-data.js on your hosting with the downloaded file.</p>
+        <h3 data-i18n="ad_export_h">Publish your changes</h3>
+        <p data-i18n="ad_export_d">Download the current product list as a file, then upload it to your site's js/ folder, replacing products-data.js.</p>
+        <div class="admin-toolbar">
+          <button id="export-btn" class="btn btn-gold" data-i18n="ad_export_btn">Download products-data.js</button>
+          <button id="import-btn" class="btn btn-outline btn-sm">Import from box below</button>
+          <button id="reset-btn" class="btn btn-outline btn-sm" data-i18n="ad_reset_btn">Reset to sample products</button>
+        </div>
+        <textarea id="export-box" class="export-box" hidden spellcheck="false"></textarea>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/products-data.js"></script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

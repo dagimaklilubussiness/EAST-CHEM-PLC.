@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products — East Chem PLC</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="products">
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6C14 10 8 18 8 27c0 8 7 13 16 13s16-5 16-13c0-9-6-17-16-21z" fill="#2B4327"/><path d="M24 12v24" stroke="#F1ECD9" stroke-width="1.4" stroke-linecap="round"/><circle cx="24" cy="10" r="3.4" fill="#C99A2E"/></svg>
+      <span>
+        <span class="brand-name">East Chem PLC</span>
+        <span class="brand-tag" data-i18n="brand_tag">Agro-chemicals & Fertilizers</span>
+      </span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-page="home" data-i18n="nav_home">Home</a></li>
+      <li><a href="products.html" data-page="products" data-i18n="nav_products">Products</a></li>
+      <li><a href="about.html" data-page="about" data-i18n="nav_about">About</a></li>
+      <li><a href="contact.html" data-page="contact" data-i18n="nav_contact">Contact</a></li>
+      <li><a href="admin.html" class="admin-link" data-i18n="admin_link">Owner login</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-switch">
+        <button class="lang-btn" aria-haspopup="true"><span class="lang-current">EN</span> ▾</button>
+        <div class="lang-menu"></div>
+      </div>
+      <button class="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+</header>
+
+<section class="band-tight">
+  <div class="container">
+    <h1 data-i18n="pp_title">Our products</h1>
+    <p class="lede" data-i18n="pp_sub">Browse by category, or search for what you need.</p>
+
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input type="search" id="product-search" data-i18n-ph="pp_search" placeholder="Search products…">
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-chip" data-cat="all" data-i18n="pp_all">All</button>
+      <button class="filter-chip" data-cat="fertilizer" data-i18n="cat_fert_t">Fertilizers</button>
+      <button class="filter-chip" data-cat="herbicide" data-i18n="cat_herb_t">Herbicides</button>
+      <button class="filter-chip" data-cat="pesticide" data-i18n="cat_pest_t">Pesticides</button>
+      <button class="filter-chip" data-cat="fungicide" data-i18n="cat_fung_t">Fungicides</button>
+      <button class="filter-chip" data-cat="seed" data-i18n="cat_seed_t">Seed treatments</button>
+    </div>
+
+    <div class="product-grid" id="product-grid"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div>
+      <h4 data-i18n="f_about_h">East Chem PLC</h4>
+      <p data-i18n="f_about_d">Agro-chemicals and fertilizers for Ethiopian farmers, supplied with honest guidance.</p>
+    </div>
+    <div>
+      <h4 data-i18n="f_links_h">Quick links</h4>
+      <ul>
+        <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+        <li><a href="products.html" data-i18n="nav_products">Products</a></li>
+        <li><a href="about.html" data-i18n="nav_about">About</a></li>
+        <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 data-i18n="f_contact_h">Contact</h4>
+      <ul>
+        <li>info@eastchem.example</li>
+        <li>+251 9xx xxx xxx</li>
+      </ul>
+    </div>
+    <div>
+      <h4>Language</h4>
+      <ul id="footer-lang"></ul>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>© <span id="year"></span> East Chem PLC. <span data-i18n="f_rights">All rights reserved.</span></span>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="product-modal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-body"></div>
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/products-data.js"></script>
+<script src="js/main.js"></script>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+  const fl = document.getElementById("footer-lang");
+  SUPPORTED_LANGS.forEach(l => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#"; a.textContent = I18N[l].lang_names[l];
+    a.addEventListener("click", (e) => { e.preventDefault(); setLang(l); location.reload(); });
+    li.appendChild(a); fl.appendChild(li);
+  });
+</script>
+</body>
+</html>

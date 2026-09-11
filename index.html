@@ -62,48 +62,7 @@
   <div class="container">
     <h2 data-i18n="cat_heading">What we supply</h2>
     <p class="lede" data-i18n="cat_sub">Four lines, one goal: healthier fields and better yields.</p>
-    <div class="cat-photo-grid">
-      <a href="products.html?cat=fertilizer" class="cat-photo-card">
-        <div class="img-slot" data-slot="cat-fertilizer.jpg">
-          <img src="cat-fertilizer.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>cat-fertilizer.jpg</b><span data-i18n="slot_cat_fert">Photo of fertilizer sacks — NPS, Urea, DAP</span></div>
-        </div>
-        <div class="cat-photo-label">
-          <h3 data-i18n="cat_fert_t">Fertilizers</h3>
-          <span data-i18n="strip_view">View products</span>
-        </div>
-      </a>
-      <a href="products.html?cat=herbicide" class="cat-photo-card">
-        <div class="img-slot" data-slot="cat-herbicide.jpg">
-          <img src="cat-herbicide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>cat-herbicide.jpg</b><span data-i18n="slot_cat_herb">Photo of herbicide bottles, or a freshly sprayed field</span></div>
-        </div>
-        <div class="cat-photo-label">
-          <h3 data-i18n="cat_herb_t">Herbicides</h3>
-          <span data-i18n="strip_view">View products</span>
-        </div>
-      </a>
-      <a href="products.html?cat=pesticide" class="cat-photo-card">
-        <div class="img-slot" data-slot="cat-pesticide.jpg">
-          <img src="cat-pesticide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>cat-pesticide.jpg</b><span data-i18n="slot_cat_pest">Photo of pesticide bottles, or spraying in action</span></div>
-        </div>
-        <div class="cat-photo-label">
-          <h3 data-i18n="cat_pest_t">Pesticides</h3>
-          <span data-i18n="strip_view">View products</span>
-        </div>
-      </a>
-      <a href="products.html?cat=fungicide" class="cat-photo-card">
-        <div class="img-slot" data-slot="cat-fungicide.jpg">
-          <img src="cat-fungicide.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>cat-fungicide.jpg</b><span data-i18n="slot_cat_fung">Photo of fungicide packs, or treated crop leaves</span></div>
-        </div>
-        <div class="cat-photo-label">
-          <h3 data-i18n="cat_fung_t">Fungicides</h3>
-          <span data-i18n="strip_view">View products</span>
-        </div>
-      </a>
-    </div>
+    <div class="cat-photo-grid" id="category-grid"></div>
   </div>
 </section>
 
@@ -117,31 +76,31 @@
           <div class="field">
             <label for="adv-crop" data-i18n="adv_crop">Crop</label>
             <select id="adv-crop" name="crop">
-              <option value="teff">Teff</option>
-              <option value="maize">Maize</option>
-              <option value="wheat">Wheat</option>
-              <option value="barley">Barley</option>
-              <option value="sorghum">Sorghum</option>
-              <option value="vegetables">Vegetables</option>
+              <option value="teff" data-i18n="crop_teff">Teff</option>
+              <option value="maize" data-i18n="crop_maize">Maize</option>
+              <option value="wheat" data-i18n="crop_wheat">Wheat</option>
+              <option value="barley" data-i18n="crop_barley">Barley</option>
+              <option value="sorghum" data-i18n="crop_sorghum">Sorghum</option>
+              <option value="vegetables" data-i18n="crop_vegetables">Vegetables</option>
             </select>
           </div>
           <div class="field">
             <label for="adv-concern" data-i18n="adv_concern">What's the issue?</label>
             <select id="adv-concern" name="concern">
-              <option value="weeds">Weeds taking over the field</option>
-              <option value="insects">Insects or pests on the crop</option>
-              <option value="fungal">Leaf spots or fungal disease</option>
-              <option value="fertility">Low soil fertility / poor growth</option>
-              <option value="seedborne">Protecting seed before sowing</option>
+              <option value="weeds" data-i18n="concern_weeds">Weeds taking over the field</option>
+              <option value="insects" data-i18n="concern_insects">Insects or pests on the crop</option>
+              <option value="fungal" data-i18n="concern_fungal">Leaf spots or fungal disease</option>
+              <option value="fertility" data-i18n="concern_fertility">Low soil fertility / poor growth</option>
+              <option value="seedborne" data-i18n="concern_seedborne">Protecting seed before sowing</option>
             </select>
           </div>
           <div class="field">
             <label for="adv-soil" data-i18n="adv_soil">Soil condition</label>
             <select id="adv-soil" name="soil">
-              <option value="unsure">Not sure</option>
-              <option value="sandy">Sandy, drains fast</option>
-              <option value="clay">Heavy / clay soil</option>
-              <option value="loamy">Balanced / loamy</option>
+              <option value="unsure" data-i18n="soil_unsure">Not sure</option>
+              <option value="sandy" data-i18n="soil_sandy">Sandy, drains fast</option>
+              <option value="clay" data-i18n="soil_clay">Heavy / clay soil</option>
+              <option value="loamy" data-i18n="soil_loamy">Balanced / loamy</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary" data-i18n="adv_btn">Show recommendation</button>
@@ -184,6 +143,14 @@
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="container">
+    <h2 data-i18n="test_h">What farmers say</h2>
+    <p class="lede" data-i18n="test_sub">Real results, in their own words.</p>
+    <div class="testimonial-grid" id="testimonials-grid"></div>
   </div>
 </section>
 
@@ -244,6 +211,7 @@
         <li>info@eastchem.example</li>
         <li>+251 9xx xxx xxx</li>
       </ul>
+      <div class="social-row" id="social-icons"></div>
     </div>
     <div>
       <h4>Language</h4>
@@ -252,6 +220,7 @@
   </div>
   <div class="container footer-bottom">
     <span>© <span id="year"></span> East Chem PLC. <span data-i18n="f_rights">All rights reserved.</span></span>
+    <span class="watermark">Built by <a href="https://t.me/dagdevio" target="_blank" rel="noopener">DagDevIO</a> · <a href="https://www.linkedin.com/in/dagim-aklilu-478b76357" target="_blank" rel="noopener">LinkedIn</a></span>
   </div>
 </footer>
 
@@ -263,7 +232,9 @@
 </div>
 
 <script src="i18n.js"></script>
+<script src="categories-data.js"></script>
 <script src="products-data.js"></script>
+<script src="extras-data.js"></script>
 <script src="main.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();

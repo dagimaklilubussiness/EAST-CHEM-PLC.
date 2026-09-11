@@ -7,7 +7,7 @@
 
 const DEFAULT_PRODUCTS = [
   {
-    id: "p001", category: "fertilizer", featured: true, image: "",
+    id: "p001", category: "fertilizer", badge: "popular", image: "",
     name: { en:"NPS Fertilizer", am:"የNPS ማዳበሪያ", om:"Xaa'oo NPS", ti:"ድኹዒ NPS" },
     desc: {
       en:"Blended fertilizer supplying nitrogen, phosphorus and sulfur for planting-time application.",
@@ -25,7 +25,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"25kg, 50kg", am:"25ኪግ፣ 50ኪግ", om:"25kg, 50kg", ti:"25ኪግ፣ 50ኪግ" }
   },
   {
-    id: "p002", category: "fertilizer", featured: true, image: "",
+    id: "p002", category: "fertilizer", badge: "popular", image: "",
     name: { en:"Urea (46% N)", am:"ዩሪያ (46% N)", om:"Uriyaa (46% N)", ti:"ዩርያ (46% N)" },
     desc: {
       en:"High-nitrogen top-dressing fertilizer for vigorous vegetative growth.",
@@ -43,7 +43,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"25kg, 50kg", am:"25ኪግ፣ 50ኪግ", om:"25kg, 50kg", ti:"25ኪግ፣ 50ኪግ" }
   },
   {
-    id: "p003", category: "fertilizer", featured: false, image: "",
+    id: "p003", category: "fertilizer", badge: "none", image: "",
     name: { en:"DAP (Di-Ammonium Phosphate)", am:"ዲኤፒ (DAP)", om:"DAP (Dai-Ammoniyeem Foosfeet)", ti:"DAP (ዳይ-ኣሞንየም ፎስፌት)" },
     desc: {
       en:"Phosphorus-rich starter fertilizer that supports strong early root development.",
@@ -61,7 +61,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"25kg, 50kg", am:"25ኪግ፣ 50ኪግ", om:"25kg, 50kg", ti:"25ኪግ፣ 50ኪግ" }
   },
   {
-    id: "p004", category: "herbicide", featured: true, image: "",
+    id: "p004", category: "herbicide", badge: "popular", image: "",
     name: { en:"2,4-D Amine 720SL", am:"2,4-ዲ አሚን 720SL", om:"2,4-D Aamiin 720SL", ti:"2,4-ዲ ኣሚን 720SL" },
     desc: {
       en:"Selective post-emergence herbicide for broadleaf weed control in cereal crops.",
@@ -79,7 +79,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"1L, 5L, 20L", am:"1ሊ፣ 5ሊ፣ 20ሊ", om:"1L, 5L, 20L", ti:"1ሊ፣ 5ሊ፣ 20ሊ" }
   },
   {
-    id: "p005", category: "herbicide", featured: false, image: "",
+    id: "p005", category: "herbicide", badge: "none", image: "",
     name: { en:"Glyphosate 41% SL", am:"ግላይፎሴት 41% SL", om:"Glaayfoseet 41% SL", ti:"ግላይፎሴት 41% SL" },
     desc: {
       en:"Non-selective, systemic herbicide for pre-planting land preparation and fallow control.",
@@ -97,7 +97,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"1L, 5L, 20L", am:"1ሊ፣ 5ሊ፣ 20ሊ", om:"1L, 5L, 20L", ti:"1ሊ፣ 5ሊ፣ 20ሊ" }
   },
   {
-    id: "p006", category: "pesticide", featured: true, image: "",
+    id: "p006", category: "pesticide", badge: "popular", image: "",
     name: { en:"Malathion 50% EC", am:"ማላቲዮን 50% EC", om:"Maalaatiyoon 50% EC", ti:"ማላትዮን 50% EC" },
     desc: {
       en:"Broad-spectrum insecticide for aphids, thrips and stored-grain pests.",
@@ -115,7 +115,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"1L, 5L", am:"1ሊ፣ 5ሊ", om:"1L, 5L", ti:"1ሊ፣ 5ሊ" }
   },
   {
-    id: "p007", category: "pesticide", featured: false, image: "",
+    id: "p007", category: "pesticide", badge: "none", image: "",
     name: { en:"Diazinon 60% EC", am:"ዲያዚኖን 60% EC", om:"Diyaazinoon 60% EC", ti:"ድያዚኖን 60% EC" },
     desc: {
       en:"Soil and foliar insecticide effective against a wide range of chewing and sucking pests.",
@@ -133,7 +133,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"1L, 5L", am:"1ሊ፣ 5ሊ", om:"1L, 5L", ti:"1ሊ፣ 5ሊ" }
   },
   {
-    id: "p008", category: "fungicide", featured: true, image: "",
+    id: "p008", category: "fungicide", badge: "popular", image: "",
     name: { en:"Mancozeb 80% WP", am:"ማንኮዜብ 80% WP", om:"Maankozeeb 80% WP", ti:"ማንኮዜብ 80% WP" },
     desc: {
       en:"Protective, broad-spectrum fungicide for blight and leaf-spot diseases on vegetables and cereals.",
@@ -151,7 +151,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"1kg, 5kg", am:"1ኪግ፣ 5ኪግ", om:"1kg, 5kg", ti:"1ኪግ፣ 5ኪግ" }
   },
   {
-    id: "p009", category: "seed", featured: false, image: "",
+    id: "p009", category: "seed", badge: "none", image: "",
     name: { en:"Apron Star 42WS Seed Treatment", am:"አፕሮን ስታር 42WS የዘር ህክምና", om:"Wal'aansa Sanyii Apron Star 42WS", ti:"ናይ ዘርኢ ሕክምና Apron Star 42WS" },
     desc: {
       en:"Combined fungicide-insecticide seed dressing that protects germinating seed from soil-borne disease and early pests.",
@@ -169,7 +169,7 @@ const DEFAULT_PRODUCTS = [
     pack: { en:"100g, 500g", am:"100ግ፣ 500ግ", om:"100g, 500g", ti:"100ግ፣ 500ግ" }
   },
   {
-    id: "p010", category: "fertilizer", featured: false, image: "",
+    id: "p010", category: "fertilizer", badge: "none", image: "",
     name: { en:"NPK 15-15-15", am:"NPK 15-15-15", om:"NPK 15-15-15", ti:"NPK 15-15-15" },
     desc: {
       en:"Balanced all-purpose fertilizer suited to vegetables and mixed-crop plots.",

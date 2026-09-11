@@ -61,21 +61,27 @@
           <div class="grid2">
             <div class="field">
               <label for="f-cat" data-i18n="ad_f_cat">Category</label>
-              <select id="f-cat" name="category">
-                <option value="fertilizer" data-i18n="cat_fert_t">Fertilizers</option>
-                <option value="herbicide" data-i18n="cat_herb_t">Herbicides</option>
-                <option value="pesticide" data-i18n="cat_pest_t">Pesticides</option>
-                <option value="fungicide" data-i18n="cat_fung_t">Fungicides</option>
-                <option value="seed" data-i18n="cat_seed_t">Seed treatments</option>
+              <select id="f-cat" name="category"></select>
+            </div>
+            <div class="field">
+              <label for="f-badge" data-i18n="ad_f_badge">Label on card</label>
+              <select id="f-badge" name="badge">
+                <option value="none" data-i18n="badge_none">None</option>
+                <option value="popular" data-i18n="badge_popular">Popular</option>
+                <option value="new" data-i18n="badge_new">New</option>
               </select>
             </div>
+          </div>
+          <div class="grid2">
             <div class="field">
               <label for="f-img" data-i18n="ad_f_img">Image URL (optional)</label>
               <input id="f-img" name="image" type="url" placeholder="https://…">
             </div>
-          </div>
-          <div class="field">
-            <label><input type="checkbox" name="featured" style="width:auto;display:inline-block"> <span data-i18n="ad_f_featured">Show in "Popular right now" on the homepage</span></label>
+            <div class="field">
+              <label for="f-img-upload" data-i18n="ad_f_image_upload">Or upload from your phone</label>
+              <input id="f-img-upload" type="file" accept="image/*">
+              <p id="f-img-status" class="note-box" style="display:none;padding:8px 12px;font-size:.8rem;margin-top:6px" data-i18n="ad_img_replace"></p>
+            </div>
           </div>
 
           <div class="lang-tab-bar" id="lang-tab-bar">
@@ -132,12 +138,124 @@
         <tbody id="admin-tbody"></tbody>
       </table>
 
+      <!-- ================= CATEGORIES ================= -->
+      <div class="admin-section-h">
+        <h2 data-i18n="ad_cat_h" style="margin:0">Manage categories</h2>
+        <button id="add-category-btn" class="btn btn-primary btn-sm" data-i18n="ad_cat_add">Add category</button>
+      </div>
+
+      <div id="category-form-panel" class="admin-form" style="display:none">
+        <form id="category-form">
+          <div class="grid2">
+            <div class="field">
+              <label for="c-color" data-i18n="ad_cat_color">Card color</label>
+              <input id="c-color" name="color" type="color" value="#7E9E3B" style="height:44px;padding:4px">
+            </div>
+          </div>
+          <div class="lang-tab-bar" data-tabgroup="cat">
+            <button type="button" class="lang-tab active" data-lang="en">English</button>
+            <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+            <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+            <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+          </div>
+          <div data-tabgroup-panes="cat">
+            <div class="lang-pane active" data-lang="en"><div class="field"><label data-i18n="ad_cat_name">Category name</label><input name="cname_en"></div></div>
+            <div class="lang-pane" data-lang="am"><div class="field"><label data-i18n="ad_cat_name">Category name</label><input name="cname_am"></div></div>
+            <div class="lang-pane" data-lang="om"><div class="field"><label data-i18n="ad_cat_name">Category name</label><input name="cname_om"></div></div>
+            <div class="lang-pane" data-lang="ti"><div class="field"><label data-i18n="ad_cat_name">Category name</label><input name="cname_ti"></div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button type="submit" class="btn btn-primary" data-i18n="ad_save_generic">Save</button>
+            <button type="button" id="cancel-category-btn" class="btn btn-outline" data-i18n="ad_cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <table class="admin-table">
+        <thead><tr>
+          <th data-i18n="ad_th_color">Color</th>
+          <th data-i18n="ad_th_name">Name</th>
+          <th data-i18n="ad_th_actions">Actions</th>
+        </tr></thead>
+        <tbody id="category-tbody"></tbody>
+      </table>
+
+      <!-- ================= FARMER STORIES ================= -->
+      <div class="admin-section-h">
+        <h2 data-i18n="ad_test_h" style="margin:0">Farmer stories</h2>
+        <button id="add-testimonial-btn" class="btn btn-primary btn-sm" data-i18n="ad_test_add">Add story</button>
+      </div>
+
+      <div id="testimonial-form-panel" class="admin-form" style="display:none">
+        <form id="testimonial-form">
+          <div class="field">
+            <label for="ts-name" data-i18n="ad_test_name">Farmer's name</label>
+            <input id="ts-name" name="tname">
+          </div>
+          <div class="field">
+            <label for="ts-media" data-i18n="ad_test_media_type">Photo or video?</label>
+            <select id="ts-media" name="mediaType">
+              <option value="photo" data-i18n="ad_test_photo">Photo</option>
+              <option value="video" data-i18n="ad_test_video">Video (max 2 min)</option>
+            </select>
+          </div>
+          <div class="field" id="ts-photo-wrap">
+            <label for="ts-photo-upload" data-i18n="ad_f_image_upload">Or upload from your phone</label>
+            <input id="ts-photo-upload" type="file" accept="image/*">
+          </div>
+          <div class="field" id="ts-filename-wrap" style="display:none">
+            <label for="ts-filename" data-i18n="ad_test_filename">File name you'll upload (e.g. story-abebe.jpg)</label>
+            <input id="ts-filename" name="filename" placeholder="story-abebe.mp4">
+          </div>
+          <p class="note-box" data-i18n="ad_test_note"></p>
+          <div class="lang-tab-bar" data-tabgroup="test">
+            <button type="button" class="lang-tab active" data-lang="en">English</button>
+            <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+            <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+            <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+          </div>
+          <div data-tabgroup-panes="test">
+            <div class="lang-pane active" data-lang="en"><div class="field"><label data-i18n="ad_test_quote">Their experience</label><textarea name="quote_en"></textarea></div></div>
+            <div class="lang-pane" data-lang="am"><div class="field"><label data-i18n="ad_test_quote">Their experience</label><textarea name="quote_am"></textarea></div></div>
+            <div class="lang-pane" data-lang="om"><div class="field"><label data-i18n="ad_test_quote">Their experience</label><textarea name="quote_om"></textarea></div></div>
+            <div class="lang-pane" data-lang="ti"><div class="field"><label data-i18n="ad_test_quote">Their experience</label><textarea name="quote_ti"></textarea></div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px">
+            <button type="submit" class="btn btn-primary" data-i18n="ad_save_generic">Save</button>
+            <button type="button" id="cancel-testimonial-btn" class="btn btn-outline" data-i18n="ad_cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <table class="admin-table">
+        <thead><tr>
+          <th data-i18n="ad_test_name">Farmer's name</th>
+          <th data-i18n="ad_th_actions">Actions</th>
+        </tr></thead>
+        <tbody id="testimonial-tbody"></tbody>
+      </table>
+
+      <!-- ================= SOCIAL LINKS ================= -->
+      <h2 data-i18n="ad_social_h">Social links</h2>
+      <form id="social-form" class="admin-form">
+        <div class="grid2">
+          <div class="field"><label data-i18n="social_telegram">Telegram</label><input name="telegram" type="url" placeholder="https://t.me/…"></div>
+          <div class="field"><label data-i18n="social_email">Email</label><input name="email" type="email" placeholder="info@…"></div>
+          <div class="field"><label data-i18n="social_facebook">Facebook</label><input name="facebook" type="url" placeholder="https://facebook.com/…"></div>
+          <div class="field"><label data-i18n="social_tiktok">TikTok</label><input name="tiktok" type="url" placeholder="https://tiktok.com/@…"></div>
+          <div class="field"><label data-i18n="social_instagram">Instagram</label><input name="instagram" type="url" placeholder="https://instagram.com/…"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" data-i18n="ad_social_save">Save links</button>
+      </form>
+
       <div style="margin-top:40px">
         <p class="note-box" data-i18n="ad_note">Changes here save to this browser only, so you can preview them. To publish for every visitor, use Export below and replace products-data.js on your hosting with the downloaded file.</p>
         <h3 data-i18n="ad_export_h">Publish your changes</h3>
         <p data-i18n="ad_export_d">Download the current product list as a file, then upload it to your site's files, replacing products-data.js.</p>
         <div class="admin-toolbar">
           <button id="export-btn" class="btn btn-gold" data-i18n="ad_export_btn">Download products-data.js</button>
+          <button id="export-cat-btn" class="btn btn-gold btn-sm">Download categories-data.js</button>
+          <button id="export-extras-btn" class="btn btn-gold btn-sm">Download extras-data.js</button>
           <button id="import-btn" class="btn btn-outline btn-sm">Import from box below</button>
           <button id="reset-btn" class="btn btn-outline btn-sm" data-i18n="ad_reset_btn">Reset to sample products</button>
         </div>
@@ -148,7 +266,9 @@
 </div>
 
 <script src="i18n.js"></script>
+<script src="categories-data.js"></script>
 <script src="products-data.js"></script>
+<script src="extras-data.js"></script>
 <script src="main.js"></script>
 <script src="admin.js"></script>
 </body>

@@ -42,14 +42,7 @@
       <input type="search" id="product-search" data-i18n-ph="pp_search" placeholder="Search products…">
     </div>
 
-    <div class="filter-bar">
-      <button class="filter-chip" data-cat="all" data-i18n="pp_all">All</button>
-      <button class="filter-chip" data-cat="fertilizer" data-i18n="cat_fert_t">Fertilizers</button>
-      <button class="filter-chip" data-cat="herbicide" data-i18n="cat_herb_t">Herbicides</button>
-      <button class="filter-chip" data-cat="pesticide" data-i18n="cat_pest_t">Pesticides</button>
-      <button class="filter-chip" data-cat="fungicide" data-i18n="cat_fung_t">Fungicides</button>
-      <button class="filter-chip" data-cat="seed" data-i18n="cat_seed_t">Seed treatments</button>
-    </div>
+    <div class="filter-bar"></div>
 
     <div class="product-grid" id="product-grid"></div>
   </div>
@@ -76,6 +69,7 @@
         <li>info@eastchem.example</li>
         <li>+251 9xx xxx xxx</li>
       </ul>
+      <div class="social-row" id="social-icons"></div>
     </div>
     <div>
       <h4>Language</h4>
@@ -84,6 +78,7 @@
   </div>
   <div class="container footer-bottom">
     <span>© <span id="year"></span> East Chem PLC. <span data-i18n="f_rights">All rights reserved.</span></span>
+    <span class="watermark">Built by <a href="https://t.me/dagdevio" target="_blank" rel="noopener">DagDevIO</a> · <a href="https://www.linkedin.com/in/dagim-aklilu-478b76357" target="_blank" rel="noopener">LinkedIn</a></span>
   </div>
 </footer>
 
@@ -95,7 +90,9 @@
 </div>
 
 <script src="i18n.js"></script>
+<script src="categories-data.js"></script>
 <script src="products-data.js"></script>
+<script src="extras-data.js"></script>
 <script src="main.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();

@@ -4,7 +4,18 @@
    parchment, canopy green, turned-soil rust, harvest gold.
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Noto+Sans+Ethiopic:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&display=swap');
+
+@font-face{
+  font-family:'Balderasu';
+  src:url('balderasu.ttf') format('truetype');
+  font-display:swap;
+}
+@font-face{
+  font-family:'Yebse';
+  src:url('yebse.ttf') format('truetype');
+  font-display:swap;
+}
 
 :root{
   --cream:      #FFFFFF;
@@ -22,8 +33,8 @@
   --orange:     #E2661F;
   --navy:       #1B2A6B;
 
-  --font-head: 'Zilla Slab', 'Noto Sans Ethiopic', serif;
-  --font-body: 'Work Sans', 'Noto Sans Ethiopic', sans-serif;
+  --font-head: 'Zilla Slab', 'Balderasu', serif;
+  --font-body: 'Work Sans', 'Yebse', sans-serif;
 
   --max: 1180px;
   --radius: 6px;
@@ -168,8 +179,8 @@ p{ margin:0 0 1em; max-width:62ch; }
   position:relative; background:var(--cream-deep); overflow:hidden;
   display:block; border-radius:10px;
 }
-.img-slot img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .35s ease; }
-.img-slot.img-missing img{ display:none; }
+.img-slot img, .img-slot video{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .35s ease; }
+.img-slot.img-missing img, .img-slot.img-missing video{ display:none; }
 .img-slot-hint{
   display:none; position:absolute; inset:0; flex-direction:column; gap:6px;
   align-items:center; justify-content:center; text-align:center; padding:18px;
@@ -270,7 +281,9 @@ p{ margin:0 0 1em; max-width:62ch; }
   transition:box-shadow .2s ease;
 }
 .product-card:hover{ box-shadow:0 12px 26px rgba(43,67,39,.12); }
-.product-card-img{ width:calc(100% + 40px); margin:-20px -20px 14px; height:140px; object-fit:cover; border-radius:0; }
+.product-card-img-wrap{ width:calc(100% + 40px); margin:-20px -20px 14px; height:140px; border-radius:0; }
+.product-card-img-wrap .img-slot-hint{ padding:6px; }
+.product-card-img-wrap .img-slot-hint span{ display:none; }
 .product-card .tag{
   position:absolute; top:-11px; right:16px; background:var(--orange); color:#fff;
   font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:10px;
@@ -331,6 +344,22 @@ p{ margin:0 0 1em; max-width:62ch; }
 .footer h4{ font-family:var(--font-head); color:#fff; margin-bottom:14px; font-size:1rem; }
 .footer ul{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:9px; font-size:.92rem; }
 .footer-bottom{ margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,.2); font-size:.82rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.watermark{ opacity:.6; font-size:.78rem; }
+.watermark a{ color:inherit; text-decoration:underline; }
+.social-row{ display:flex; gap:10px; margin-top:14px; }
+.social-icon{ width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; color:inherit; transition:background .2s ease; }
+.social-icon svg{ width:17px; height:17px; }
+.social-icon:hover{ background:rgba(255,255,255,.3); }
+
+/* ---------- farmer story testimonials ---------- */
+.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:30px; }
+.testimonial-card{ background:var(--paper); border:1px solid var(--cream-deep); border-radius:12px; padding:18px; }
+.testimonial-quote{ font-style:italic; color:var(--ink-soft); margin:14px 0 8px; }
+.testimonial-name{ font-weight:700; color:var(--canopy-deep); margin:0; }
+
+/* ---------- designer credit ---------- */
+.credit-line{ opacity:.85; }
+.credit-line a{ text-decoration:underline; }
 
 /* ---------- about / contact ---------- */
 .split{ display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
@@ -351,6 +380,8 @@ form .field textarea{ resize:vertical; min-height:110px; }
 .admin-table th,.admin-table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--cream-deep); font-size:.92rem; vertical-align:top; }
 .admin-table th{ background:var(--cream-deep); font-family:var(--font-head); }
 .admin-form{ background:var(--paper); border:1px solid var(--cream-deep); border-radius:12px; padding:28px; margin-bottom:30px; }
+.admin-section-h{ display:flex; justify-content:space-between; align-items:center; margin:44px 0 16px; }
+.admin-section-h h2{ margin:0; }
 .admin-form .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }
 .lang-tab-bar{ display:flex; gap:8px; margin-bottom:14px; }
 .lang-tab{ padding:6px 14px; border-radius:16px; border:1px solid var(--cream-deep); background:var(--cream); cursor:pointer; font-size:.82rem; font-weight:600; }

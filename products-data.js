@@ -1,8 +1,8 @@
 /* =========================================================
    EAST CHEM PLC — product catalog
-   This is the file the admin panel's "Export" button replaces.
-   To add products by hand instead, copy an object below and
-   edit it — id must stay unique.
+   Backed by Firestore (collection "products") once Firebase is
+   configured; DEFAULT_PRODUCTS is the fallback/seed data used
+   before that, and what "Reset to sample data" restores.
    ========================================================= */
 
 const DEFAULT_PRODUCTS = [
@@ -188,13 +188,40 @@ const DEFAULT_PRODUCTS = [
   }
 ];
 
-/* Merge admin-added/edited products (saved in this browser) with the
-   defaults above. Admin edits with a matching id override the default. */
-function getAllProducts(){
-  let stored = [];
-  try{ stored = JSON.parse(localStorage.getItem("ec_products_v1") || "[]"); }catch(e){ stored = []; }
-  const map = new Map();
-  DEFAULT_PRODUCTS.forEach(p => map.set(p.id, p));
-  stored.forEach(p => map.set(p.id, p));
-  return Array.from(map.values()).filter(p => !p._deleted);
+async function fetchProducts(){
+  if(!FIREBASE_READY) return DEFAULT_PRODUCTS;
+  try{
+    const snap = await db.collection("products").get();
+    if(snap.empty) return DEFAULT_PRODUCTS;
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }catch(e){ console.error(e); return DEFAULT_PRODUCTS; }
+}
+async function writeProduct(p){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  const { id, ...data } = p;
+  await db.collection("products").doc(id).set(data);
+}
+async function removeProduct(id){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  await db.collection("products").doc(id).delete();
+}
+async function resetProducts(){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  const snap = await db.collection("products").get();
+  const batch = db.batch();
+  snap.docs.forEach(d => batch.delete(d.ref));
+  DEFAULT_PRODUCTS.forEach(p => {
+    const { id, ...data } = p;
+    batch.set(db.collection("products").doc(id), data);
+  });
+  await batch.commit();
+}
+
+/* ---------- image upload (Firebase Storage) ---------- */
+async function uploadProductImage(file){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  const blob = await resizeImageToBlob(file, 1000, 0.8);
+  const ref = storage.ref().child("products/" + Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g,"_"));
+  await ref.put(blob);
+  return await ref.getDownloadURL();
 }

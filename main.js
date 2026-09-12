@@ -1,12 +1,26 @@
 /* =========================================================
    EAST CHEM PLC — shared site behaviour
+   Loads all data from Firestore once (falling back to the
+   built-in sample data if Firebase isn't configured yet),
+   caches it, then renders every page from that cache.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+var PRODUCTS_CACHE = [];
+var CATEGORIES_CACHE = [];
+var TESTIMONIALS_CACHE = [];
+var SOCIAL_CACHE = {};
+var CONTENT_CACHE = {};
+
+document.addEventListener("DOMContentLoaded", async () => {
   applyI18n();
   initNav();
   initLangSwitch();
-  initCounters();
+  await loadSiteData();
+
+  renderHeroText();
+  renderHeroStats();
+  renderContactInfo();
+  renderAboutContent();
   initAdvisor();
   renderCategoryGrid();
   initProductGrids();
@@ -16,7 +30,39 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTestimonials();
 });
 
-/* ---------- translations ---------- */
+async function loadSiteData(){
+  const [products, categories, testimonials, social, content] = await Promise.all([
+    fetchProducts(), fetchCategories(), fetchTestimonials(), fetchSocialLinks(), fetchContent()
+  ]);
+  PRODUCTS_CACHE = products;
+  CATEGORIES_CACHE = categories;
+  TESTIMONIALS_CACHE = testimonials;
+  SOCIAL_CACHE = social;
+  CONTENT_CACHE = content;
+}
+
+/* ---------- shared image resize helper (used by admin uploads) ---------- */
+function resizeImageToBlob(file, maxDim, quality){
+  maxDim = maxDim || 900; quality = quality || 0.75;
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if(w > h){ if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
+      else { if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(blob => resolve(blob), "image/jpeg", quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image load failed")); };
+    img.src = url;
+  });
+}
+
+/* ---------- translations (static interface chrome) ---------- */
 function applyI18n(){
   document.documentElement.lang = getLang();
   document.querySelectorAll("[data-i18n]").forEach(el => {
@@ -28,6 +74,66 @@ function applyI18n(){
   const page = document.body.dataset.page;
   document.querySelectorAll(".nav-links a[data-page]").forEach(a => {
     a.classList.toggle("active", a.dataset.page === page);
+  });
+}
+
+/* ---------- dynamic content (admin-editable via Firestore) ---------- */
+function renderHeroText(){
+  const lang = getLang();
+  const h = CONTENT_CACHE.hero;
+  if(!h) return;
+  const set = (id, obj) => { const el = document.getElementById(id); if(el && obj) el.textContent = obj[lang] || obj.en; };
+  set("hero-eyebrow", h.eyebrow);
+  set("hero-title", h.title);
+  set("hero-subtitle", h.subtitle);
+}
+
+function parseStatNumber(str){
+  const m = String(str||"0").match(/^([\d,]+)(.*)$/);
+  if(!m) return { value: 0, suffix: str||"" };
+  return { value: parseInt(m[1].replace(/,/g,""),10) || 0, suffix: m[2] || "" };
+}
+
+function renderHeroStats(){
+  const wrap = document.getElementById("hero-stats-card");
+  if(!wrap || !CONTENT_CACHE.stats) return;
+  const lang = getLang();
+  wrap.innerHTML = CONTENT_CACHE.stats.map(s => {
+    const { value, suffix } = parseStatNumber(s.number);
+    const label = (s.label && (s.label[lang] || s.label.en)) || "";
+    return `<div class="stat"><b data-count="${value}" data-suffix="${suffix}">0</b><span>${label}</span></div>`;
+  }).join("");
+  initCounters();
+}
+
+function renderContactInfo(){
+  const c = CONTENT_CACHE.contact;
+  if(!c) return;
+  const lang = getLang();
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set("contact-address", (c.address && (c.address[lang] || c.address.en)) || "");
+  set("contact-phone", c.phone || "");
+  set("contact-email", c.email || "");
+  set("contact-hours", (c.hours && (c.hours[lang] || c.hours.en)) || "");
+}
+
+function renderAboutContent(){
+  const a = CONTENT_CACHE.about;
+  if(!a) return;
+  const lang = getLang();
+  const set = (id, obj) => { const el = document.getElementById(id); if(el && obj) el.textContent = obj[lang] || obj.en; };
+  set("ab-lede", a.lede);
+  set("ab-mission-title", a.missionTitle);
+  set("ab-mission-text", a.missionText);
+  set("ab-story-heading", a.storyHeading);
+  (a.timeline || []).forEach((item, i) => {
+    set("ab-t" + (i+1) + "-year", item.year);
+    set("ab-t" + (i+1) + "-text", item.text);
+  });
+  set("ab-values-heading", a.valuesHeading);
+  (a.values || []).forEach((item, i) => {
+    set("ab-v" + (i+1) + "-title", item.title);
+    set("ab-v" + (i+1) + "-text", item.text);
   });
 }
 
@@ -92,10 +198,10 @@ function initAdvisor(){
   const result = document.getElementById("advisor-result");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const lang = getLang();
     const concern = form.concern.value;
     const catId = ADVISOR_MAP[concern] || "fertilizer";
     const cat = getCategory(catId);
+    const lang = getLang();
     result.classList.remove("empty");
     result.innerHTML = `
       <h4>${t("adv_result_t")} ${catField(cat,"name",lang)}</h4>
@@ -103,6 +209,25 @@ function initAdvisor(){
       <a class="btn btn-primary btn-sm" href="products.html?cat=${catId}">${t("strip_view")}</a>
     `;
   });
+}
+
+/* ---------- category grid (homepage) ---------- */
+function renderCategoryGrid(){
+  const wrap = document.getElementById("category-grid");
+  if(!wrap) return;
+  const lang = getLang();
+  wrap.innerHTML = CATEGORIES_CACHE.map(cat => `
+    <a href="products.html?cat=${cat.id}" class="cat-photo-card">
+      <div class="img-slot" data-slot="cat-${cat.id}.jpg" style="border-top:5px solid ${cat.color}">
+        <img src="cat-${cat.id}.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
+        <div class="img-slot-hint"><b>cat-${cat.id}.jpg</b><span>${t("slot_cat_generic")}</span></div>
+      </div>
+      <div class="cat-photo-label">
+        <h3>${catField(cat,"name",lang)}</h3>
+        <span style="color:${cat.color}">${t("strip_view")}</span>
+      </div>
+    </a>
+  `).join("");
 }
 
 /* ---------- product rendering ---------- */
@@ -113,16 +238,18 @@ function productField(p, field, lang){
 
 function productCardHTML(p, lang){
   const cat = getCategory(p.category);
-  const badge = p.badge && p.badge !== "none"
-    ? `<span class="tag" style="background:${p.badge === 'new' ? 'var(--canopy)' : 'var(--orange)'}">${t(p.badge === "new" ? "badge_new" : "badge_popular")}</span>`
-    : "";
-  const img = p.image
-    ? `<div class="img-slot product-card-img-wrap"><img src="${p.image}" alt="" onerror="this.parentElement.classList.add('img-missing')"><div class="img-slot-hint"><span>—</span></div></div>`
-    : "";
+  const hasBadge = p.badge && p.badge !== "none";
+  const badgeHTML = hasBadge ? `<span class="tag tag-${p.badge}">${t("badge_" + p.badge)}</span>` : "";
+  const img = p.image ? `
+    <div class="img-slot product-card-img-wrap">
+      <img src="${p.image}" alt="" onerror="this.parentElement.classList.add('img-missing')">
+      <div class="img-slot-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-4 4-3-3-6 6"/></svg></div>
+      ${hasBadge ? `<span class="tag tag-on-image tag-${p.badge}">${t("badge_" + p.badge)}</span>` : ""}
+    </div>` : "";
   return `
     <article class="product-card" data-id="${p.id}" tabindex="0" role="button" aria-haspopup="dialog" style="border-top-color:${cat.color}">
-      ${badge}
       ${img}
+      ${(!p.image && hasBadge) ? badgeHTML : ""}
       <span class="cat" style="color:${cat.color}">${catField(cat,"name",lang)}</span>
       <h3>${productField(p,"name",lang)}</h3>
       <p>${productField(p,"desc",lang)}</p>
@@ -131,29 +258,9 @@ function productCardHTML(p, lang){
   `;
 }
 
-/* ---------- homepage category photo grid (fully dynamic) ---------- */
-function renderCategoryGrid(){
-  const wrap = document.getElementById("category-grid");
-  if(!wrap) return;
-  const lang = getLang();
-  const cats = getAllCategories();
-  wrap.innerHTML = cats.map(cat => `
-    <a href="products.html?cat=${cat.id}" class="cat-photo-card">
-      <div class="img-slot" data-slot="cat-${cat.id}.jpg" style="aspect-ratio:4/3">
-        <img src="cat-${cat.id}.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-        <div class="img-slot-hint"><b>cat-${cat.id}.jpg</b><span>${t("slot_cat_" + cat.id) !== "slot_cat_" + cat.id ? t("slot_cat_" + cat.id) : t("slot_cat_generic")}</span></div>
-      </div>
-      <div class="cat-photo-label">
-        <h3 style="color:${cat.color}">${catField(cat,"name",lang)}</h3>
-        <span data-i18n="strip_view">View products</span>
-      </div>
-    </a>
-  `).join("");
-}
-
 function initProductGrids(){
   const lang = getLang();
-  const products = (typeof getAllProducts === "function") ? getAllProducts() : [];
+  const products = PRODUCTS_CACHE;
 
   /* featured strip on homepage: any product with a badge (Popular or New) */
   const featuredWrap = document.getElementById("featured-grid");
@@ -169,16 +276,16 @@ function initProductGrids(){
 
   const params = new URLSearchParams(location.search);
   let activeCat = params.get("cat") || "all";
+  const searchInput = document.getElementById("product-search");
+  const filterBar = document.querySelector(".filter-bar");
 
-  /* build filter chips dynamically from current categories */
-  const chipBar = document.querySelector(".filter-bar");
-  if(chipBar){
-    const cats = getAllCategories();
-    chipBar.innerHTML = `<button class="filter-chip" data-cat="all">${t("pp_all")}</button>` +
-      cats.map(c => `<button class="filter-chip" data-cat="${c.id}">${catField(c,"name",lang)}</button>`).join("");
+  if(filterBar){
+    const chipHTML = [`<button class="filter-chip" data-cat="all">${t("pp_all")}</button>`]
+      .concat(CATEGORIES_CACHE.map(c => `<button class="filter-chip" data-cat="${c.id}">${catField(c,"name",lang)}</button>`))
+      .join("");
+    filterBar.innerHTML = chipHTML;
   }
   const chips = document.querySelectorAll(".filter-chip");
-  const searchInput = document.getElementById("product-search");
 
   function render(){
     const term = (searchInput?.value || "").trim().toLowerCase();
@@ -228,9 +335,7 @@ function openProductModal(p){
   if(!backdrop || !p) return;
   const lang = getLang();
   const cat = getCategory(p.category);
-  const img = p.image
-    ? `<div class="img-slot" style="aspect-ratio:16/10;margin-bottom:16px"><img src="${p.image}" alt="" onerror="this.parentElement.classList.add('img-missing')"><div class="img-slot-hint"><span>—</span></div></div>`
-    : "";
+  const img = p.image ? `<img src="${p.image}" alt="" style="width:100%;border-radius:8px;margin-bottom:16px;max-height:260px;object-fit:cover">` : "";
   backdrop.querySelector(".modal-body").innerHTML = `
     ${img}
     <span class="cat" style="color:${cat.color}">${catField(cat,"name",lang)}</span>
@@ -249,57 +354,56 @@ function closeProductModal(){
   document.getElementById("product-modal")?.classList.remove("open");
 }
 
-/* ---------- social icons (footer) ---------- */
+/* ---------- social icons (footer, every page) ---------- */
 const SOCIAL_ICONS = {
-  telegram: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.5 2.7 12.1c-1 .4-1 1.6.1 1.9l4.7 1.5 1.8 5.6c.3.9 1.4 1.1 2 .4l2.6-2.9 4.8 3.6c.8.6 1.9.2 2.1-.8l3-14.3c.2-1-.8-1.8-1.9-1.6zM8.6 14.9l8.7-6.8c.3-.2.6.2.3.4l-7.2 7.3-.3 3.5-1.5-4.4z"/></svg>',
+  telegram: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.6 18.7 20c-.2 1-.9 1.3-1.8.8l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.3-.1-.5-.6-.2L6.5 12.9l-5-1.6c-1-.3-1-1 .2-1.5L20.6 3.4c.9-.3 1.6.2 1.3 1.2Z"/></svg>',
   email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>',
-  facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.4-3H13.5V8.4c0-.9.2-1.5 1.6-1.5H16.5V4.2C16.2 4.2 15.2 4 14 4c-2.4 0-4 1.5-4 4.1v2.4H7.5v3H10V21h3.5z"/></svg>',
-  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 3h2.6c.2 1.6 1.3 3 3.4 3.3v2.6c-1.3 0-2.5-.4-3.4-1v6.4a5 5 0 1 1-5-5c.2 0 .5 0 .7.1v2.7a2.4 2.4 0 1 0 1.7 2.3V3z"/></svg>',
+  facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.5l.4-3H13.5V8.4c0-.9.2-1.5 1.5-1.5h1.6V4.3C16.3 4.2 15.2 4 14 4c-2.5 0-4.2 1.5-4.2 4.3v2.2H7.3v3h2.5V21h3.7Z"/></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 3c.4 2 1.7 3.6 3.9 4v3c-1.5 0-2.9-.4-4-1.2v6.4a5.7 5.7 0 1 1-5.7-5.7c.3 0 .6 0 .9.1v3.1a2.6 2.6 0 1 0 1.8 2.5V3h3.1Z"/></svg>',
   instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>'
 };
+function socialHref(platform, value){
+  if(!value) return "";
+  if(platform === "email") return value.includes("@") ? ("mailto:" + value) : value;
+  return value;
+}
 function renderSocialIcons(){
   const wrap = document.getElementById("social-icons");
   if(!wrap) return;
-  const links = getSocialLinks();
-  const labelKeys = { telegram:"social_telegram", email:"social_email", facebook:"social_facebook", tiktok:"social_tiktok", instagram:"social_instagram" };
-  wrap.innerHTML = SOCIAL_PLATFORMS.map(p => {
-    const has = !!links[p];
-    const url = has ? (p === "email" ? ("mailto:" + links[p]) : links[p]) : "#";
-    const target = has ? ' target="_blank" rel="noopener"' : "";
-    const label = t(labelKeys[p]);
-    return `<a href="${url}"${target} class="social-icon" title="${label}" aria-label="${label}">${SOCIAL_ICONS[p]}</a>`;
-  }).join("");
+  const links = SOCIAL_CACHE || {};
+  const html = SOCIAL_PLATFORMS
+    .filter(p => links[p])
+    .map(p => `<a href="${socialHref(p, links[p])}" target="_blank" rel="noopener" class="social-icon" aria-label="${p}">${SOCIAL_ICONS[p]}</a>`)
+    .join("");
+  wrap.innerHTML = html;
+  wrap.style.display = html ? "flex" : "none";
 }
 
-/* ---------- farmer story testimonials (home page) ---------- */
+/* ---------- farmer stories (homepage) ---------- */
 function renderTestimonials(){
   const wrap = document.getElementById("testimonials-grid");
+  const section = document.getElementById("testimonials-section");
   if(!wrap) return;
-  const section = wrap.closest("section");
-  const items = (typeof getAllTestimonials === "function") ? getAllTestimonials() : [];
+  const items = TESTIMONIALS_CACHE;
   if(!items.length){ if(section) section.style.display = "none"; return; }
   if(section) section.style.display = "";
   const lang = getLang();
-  wrap.innerHTML = items.map(item => {
-    const isVideo = item.mediaType === "video";
-    const mediaTag = isVideo
-      ? `<video src="${item.filename || ''}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
-      : `<img src="${item.filename || ''}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
-    const quote = (item.quote && (item.quote[lang] || item.quote.en)) || "";
+  wrap.innerHTML = items.map(x => {
+    const media = x.mediaType === "video"
+      ? `<video src="${x.mediaUrl}" controls playsinline></video>`
+      : `<img src="${x.mediaUrl}" alt="">`;
+    const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
     return `
       <div class="testimonial-card">
-        <div class="img-slot" style="aspect-ratio:4/3">
-          ${mediaTag}
-          <div class="img-slot-hint"><b>${item.filename || "—"}</b><span>${isVideo ? t("ad_test_video") : t("ad_test_photo")}</span></div>
-        </div>
-        <p class="testimonial-quote">${quote}</p>
-        <p class="testimonial-name">${item.name || ""}</p>
+        <div class="img-slot testimonial-media">${x.mediaUrl ? media : ""}</div>
+        <p class="testimonial-quote">"${quote}"</p>
+        <p class="testimonial-name">— ${x.name || ""}</p>
       </div>
     `;
   }).join("");
 }
 
-/* ---------- contact form (mailto fallback — no backend on a free static site) ---------- */
+/* ---------- contact form (mailto fallback — no backend needed for messages) ---------- */
 function initContactForm(){
   const form = document.getElementById("contact-form");
   if(!form) return;
@@ -316,9 +420,10 @@ function initContactForm(){
     const phone = form.phone.value.trim();
     const email = form.email.value.trim();
     const message = form.message.value.trim();
+    const toAddress = (CONTENT_CACHE.contact && CONTENT_CACHE.contact.email) || "info@eastchem.example";
     const subject = encodeURIComponent(`Website inquiry from ${name || "a customer"}`);
     const body = encodeURIComponent(`${message}\n\n— ${name}\nPhone: ${phone}\nEmail: ${email}`);
-    window.location.href = `mailto:info@eastchem.example?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${toAddress}?subject=${subject}&body=${body}`;
     document.getElementById("contact-sent").hidden = false;
   });
 }

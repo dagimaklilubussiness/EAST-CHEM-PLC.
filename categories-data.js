@@ -1,7 +1,8 @@
 /* =========================================================
    EAST CHEM PLC — product categories
-   Admin can add more from the owner panel; this file holds the
-   defaults. Exported/replaced the same way as products-data.js.
+   Backed by Firestore (collection "categories") once Firebase
+   is configured; DEFAULT_CATEGORIES is the fallback/seed data
+   used before that, and what "Reset to sample data" restores.
    ========================================================= */
 
 const DEFAULT_CATEGORIES = [
@@ -57,16 +58,39 @@ const DEFAULT_CATEGORIES = [
   }
 ];
 
-function getAllCategories(){
-  let stored = [];
-  try{ stored = JSON.parse(localStorage.getItem("ec_categories_v1") || "[]"); }catch(e){ stored = []; }
-  const map = new Map();
-  DEFAULT_CATEGORIES.forEach(c => map.set(c.id, c));
-  stored.forEach(c => map.set(c.id, c));
-  return Array.from(map.values()).filter(c => !c._deleted);
+async function fetchCategories(){
+  if(!FIREBASE_READY) return DEFAULT_CATEGORIES;
+  try{
+    const snap = await db.collection("categories").get();
+    if(snap.empty) return DEFAULT_CATEGORIES;
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  }catch(e){ console.error(e); return DEFAULT_CATEGORIES; }
 }
+async function writeCategory(cat){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  const { id, ...data } = cat;
+  await db.collection("categories").doc(id).set(data);
+}
+async function removeCategory(id){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  await db.collection("categories").doc(id).delete();
+}
+async function resetCategories(){
+  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
+  const snap = await db.collection("categories").get();
+  const batch = db.batch();
+  snap.docs.forEach(d => batch.delete(d.ref));
+  DEFAULT_CATEGORIES.forEach(c => {
+    const { id, ...data } = c;
+    batch.set(db.collection("categories").doc(id), data);
+  });
+  await batch.commit();
+}
+
+/* ---------- sync helpers that read from main.js's in-memory cache ---------- */
 function getCategory(id){
-  return getAllCategories().find(c => c.id === id) || { id, color:"#999", name:{en:id,am:id,om:id,ti:id}, desc:{en:"",am:"",om:"",ti:""} };
+  const list = (typeof CATEGORIES_CACHE !== "undefined" && CATEGORIES_CACHE.length) ? CATEGORIES_CACHE : DEFAULT_CATEGORIES;
+  return list.find(c => c.id === id) || { id, color:"#999", name:{en:id,am:id,om:id,ti:id}, desc:{en:"",am:"",om:"",ti:""} };
 }
 function catField(cat, field, lang){
   if(!cat[field]) return "";

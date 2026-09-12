@@ -35,15 +35,15 @@
 <section class="band-tight">
   <div class="container">
     <h1 data-i18n="ab_title">About East Chem</h1>
-    <p class="lede" data-i18n="ab_lede">We started East Chem to close the gap between what's on the agro-shop shelf and what farmers actually know how to do with it.</p>
+    <p class="lede" id="ab-lede">We started East Chem to close the gap between what's on the agro-shop shelf and what farmers actually know how to do with it.</p>
   </div>
 </section>
 
 <section class="band band-alt">
   <div class="container split">
     <div>
-      <h2 data-i18n="ab_mission_t">Our mission</h2>
-      <p data-i18n="ab_mission_d">Supply genuine, well-matched agricultural inputs — and make sure the person buying them understands exactly how to use them safely and effectively.</p>
+      <h2 id="ab-mission-title">Our mission</h2>
+      <p id="ab-mission-text">Supply genuine, well-matched agricultural inputs — and make sure the person buying them understands exactly how to use them safely and effectively.</p>
     </div>
     <div class="img-slot" data-slot="about-1.jpg" style="aspect-ratio:4/3">
       <img src="about-1.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
@@ -54,13 +54,13 @@
 
 <section class="band">
   <div class="container">
-    <h2 data-i18n="ab_story_h">How we got here</h2>
+    <h2 id="ab-story-heading">How we got here</h2>
     <div class="split">
     <div class="timeline">
-      <div><b data-i18n="ab_t1_y">Founded</b><p data-i18n="ab_t1_d">East Chem PLC registered to serve agro-dealers and cooperatives with fertilizer and crop-protection supply.</p></div>
-      <div><b data-i18n="ab_t2_y">Expanded reach</b><p data-i18n="ab_t2_d">Grew distribution beyond regional capitals into woreda-level agro-dealers.</p></div>
-      <div><b data-i18n="ab_t3_y">Added guidance</b><p data-i18n="ab_t3_d">Began pairing every product line with plain-language usage and safety instructions.</p></div>
-      <div><b data-i18n="ab_t4_y">Today</b><p data-i18n="ab_t4_d">Serving farmers and distributors with a growing product catalog and multilingual support.</p></div>
+      <div><b id="ab-t1-year">Founded</b><p id="ab-t1-text">East Chem PLC registered to serve agro-dealers and cooperatives with fertilizer and crop-protection supply.</p></div>
+      <div><b id="ab-t2-year">Expanded reach</b><p id="ab-t2-text">Grew distribution beyond regional capitals into woreda-level agro-dealers.</p></div>
+      <div><b id="ab-t3-year">Added guidance</b><p id="ab-t3-text">Began pairing every product line with plain-language usage and safety instructions.</p></div>
+      <div><b id="ab-t4-year">Today</b><p id="ab-t4-text">Serving farmers and distributors with a growing product catalog and multilingual support.</p></div>
     </div>
     <div class="img-slot" data-slot="about-2.jpg" style="aspect-ratio:3/4">
       <img src="about-2.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
@@ -72,22 +72,22 @@
 
 <section class="band band-alt">
   <div class="container">
-    <h2 data-i18n="ab_values_h">What guides us</h2>
+    <h2 id="ab-values-heading">What guides us</h2>
     <div class="value-grid">
       <div class="value-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12l3 3 5-6"/><circle cx="12" cy="12" r="10"/></svg>
-        <h3 data-i18n="ab_v1_t">Safety first</h3>
-        <p data-i18n="ab_v1_d">Correct dosage protects both the harvest and the person applying it.</p>
+        <h3 id="ab-v1-title">Safety first</h3>
+        <p id="ab-v1-text">Correct dosage protects both the harvest and the person applying it.</p>
       </div>
       <div class="value-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <h3 data-i18n="ab_v2_t">Straight talk</h3>
-        <p data-i18n="ab_v2_d">We explain trade-offs plainly, in the language you're comfortable in.</p>
+        <h3 id="ab-v2-title">Straight talk</h3>
+        <p id="ab-v2-text">We explain trade-offs plainly, in the language you're comfortable in.</p>
       </div>
       <div class="value-item">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l2-7h14l2 7"/><path d="M5 12h14v7H5z"/><circle cx="8" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/></svg>
-        <h3 data-i18n="ab_v3_t">Reliability</h3>
-        <p data-i18n="ab_v3_d">Stock that's there when planting season needs it to be.</p>
+        <h3 id="ab-v3-title">Reliability</h3>
+        <p id="ab-v3-text">Stock that's there when planting season needs it to be.</p>
       </div>
     </div>
   </div>
@@ -135,10 +135,16 @@
   </div>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="i18n.js"></script>
 <script src="categories-data.js"></script>
 <script src="products-data.js"></script>
 <script src="extras-data.js"></script>
+<script src="content-data.js"></script>
 <script src="main.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();

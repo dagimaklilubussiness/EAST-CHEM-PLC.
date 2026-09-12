@@ -285,9 +285,12 @@ p{ margin:0 0 1em; max-width:62ch; }
 .product-card-img-wrap .img-slot-hint{ padding:6px; }
 .product-card-img-wrap .img-slot-hint span{ display:none; }
 .product-card .tag{
-  position:absolute; top:-11px; right:16px; background:var(--orange); color:#fff;
+  position:absolute; top:-11px; right:16px; color:#fff;
   font-size:.7rem; font-weight:700; padding:3px 9px; border-radius:10px;
 }
+.product-card .tag.tag-on-image{ top:10px; right:10px; }
+.tag-popular{ background:var(--orange); }
+.tag-new{ background:var(--canopy); }
 .product-card h3{ margin-bottom:4px; font-size:1.08rem; }
 .product-card .cat{ font-size:.78rem; color:var(--rust); font-weight:600; margin-bottom:10px; display:block; }
 .product-card p{ font-size:.9rem; color:var(--ink-soft); margin-bottom:14px; }
@@ -354,6 +357,7 @@ p{ margin:0 0 1em; max-width:62ch; }
 /* ---------- farmer story testimonials ---------- */
 .testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:30px; }
 .testimonial-card{ background:var(--paper); border:1px solid var(--cream-deep); border-radius:12px; padding:18px; }
+.testimonial-media{ aspect-ratio:4/3; border-radius:8px; background:var(--cream-deep); }
 .testimonial-quote{ font-style:italic; color:var(--ink-soft); margin:14px 0 8px; }
 .testimonial-name{ font-weight:700; color:var(--canopy-deep); margin:0; }
 

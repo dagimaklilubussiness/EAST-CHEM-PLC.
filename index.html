@@ -42,20 +42,16 @@
       <span data-i18n="slot_hero">Wide photo (1600px+) — your warehouse, a sack pile, or a green field</span>
     </div>
     <div class="hero-photo-overlay">
-      <p class="hero-eyebrow" data-i18n="hero_eyebrow">Ethiopian-owned, farm-tested</p>
-      <h1 data-i18n="hero_title">Grown from the soil up.</h1>
-      <p class="lede" data-i18n="hero_sub">East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia — with clear guidance on what to use, and how.</p>
+      <p class="hero-eyebrow" id="hero-eyebrow">Ethiopian-owned, farm-tested</p>
+      <h1 id="hero-title">Grown from the soil up.</h1>
+      <p class="lede" id="hero-subtitle">East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia — with clear guidance on what to use, and how.</p>
       <div class="hero-actions">
         <a href="products.html" class="btn btn-primary" data-i18n="hero_cta1">Browse products</a>
         <a href="contact.html" class="btn btn-outline" data-i18n="hero_cta2" style="background:rgba(255,255,255,.92)">Talk to our team</a>
       </div>
     </div>
   </div>
-  <div class="hero-stats-card">
-    <div class="stat"><b data-count="12" data-suffix="+">0</b><span data-i18n="stat1_l">years in the field</span></div>
-    <div class="stat"><b data-count="40" data-suffix="+">0</b><span data-i18n="stat2_l">districts supplied</span></div>
-    <div class="stat"><b data-count="6000" data-suffix="+">0</b><span data-i18n="stat3_l">farmers reached</span></div>
-  </div>
+  <div class="hero-stats-card" id="hero-stats-card"></div>
 </section>
 
 <section class="band band-alt">
@@ -146,7 +142,7 @@
   </div>
 </section>
 
-<section class="band band-alt">
+<section class="band band-alt" id="testimonials-section">
   <div class="container">
     <h2 data-i18n="test_h">What farmers say</h2>
     <p class="lede" data-i18n="test_sub">Real results, in their own words.</p>
@@ -231,10 +227,16 @@
   </div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
 <script src="i18n.js"></script>
 <script src="categories-data.js"></script>
 <script src="products-data.js"></script>
 <script src="extras-data.js"></script>
+<script src="content-data.js"></script>
 <script src="main.js"></script>
 <script>
   document.getElementById("year").textContent = new Date().getFullYear();

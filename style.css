@@ -408,22 +408,35 @@ form .field textarea{ resize:vertical; min-height:110px; }
   .hero-photo-media{ aspect-ratio:4/5; }
 }
 @media (max-width:760px){
-  html{ font-size:28px; }
+  body{ font-size:17px; }
   .nav-links{
     position:fixed; top:66px; left:0; right:0; background:var(--paper);
-    flex-direction:column; align-items:flex-start; padding:20px 24px; gap:22px;
+    flex-direction:column; align-items:flex-start; padding:20px 24px; gap:20px;
     border-bottom:1px solid var(--cream-deep);
     transform:translateY(-130%); transition:transform .25s ease; z-index:40;
   }
   .nav-links.open{ transform:translateY(0); }
+  .nav-links a{ font-size:1.1rem; padding:.4em 0; }
   .hamburger{ display:block; padding:10px; }
-  .hamburger span{ width:30px; height:3px; margin:6px 0; }
+  .hamburger span{ width:28px; height:3px; margin:6px 0; }
   .hero-stats{ gap:22px; }
   .footer-grid{ grid-template-columns:1fr; }
   .hero-photo-overlay{ padding:22px 20px; }
   .hero-stats-card{ flex-direction:column; align-items:flex-start; margin-top:-24px; padding:20px 22px; gap:16px; }
-  .brand-logo{ height:2.1rem; }
-  .product-card{ padding:1.3rem; }
+  .brand-logo{ height:44px; }
+  .product-card{ padding:1.1rem; }
+
+  /* bigger, easier-to-tap buttons and form fields */
+  .btn{ padding:16px 30px; font-size:1.05rem; line-height:1.25; min-height:48px; }
+  .btn-sm{ padding:11px 20px; font-size:.95rem; min-height:40px; }
+  .filter-chip{ padding:11px 20px; font-size:1rem; }
+  .lang-btn{ padding:10px 18px; font-size:.95rem; }
+  .field select, .field input, .field textarea{ padding:14px 14px; font-size:1.05rem; }
+  .search-box input{ padding:14px 16px 14px 42px; font-size:1.05rem; }
+
+  /* keep card labels from cramming title + link onto one tight row */
+  .cat-photo-label{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .strip-go{ white-space:normal; }
   .admin-form{ padding:1.3rem; }
   .modal{ padding:1.5rem; }
 }

@@ -47,19 +47,3 @@ async function removeTestimonial(id){
   if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
   await db.collection("testimonials").doc(id).delete();
 }
-
-/* ---------- media upload (Firebase Storage) — photo or video ---------- */
-async function uploadTestimonialMedia(file){
-  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
-  const isVideo = file.type.startsWith("video/");
-  const path = "testimonials/" + Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g,"_");
-  const ref = storage.ref().child(path);
-  if(isVideo){
-    await ref.put(file);
-  } else {
-    const blob = await resizeImageToBlob(file, 1000, 0.8);
-    await ref.put(blob);
-  }
-  const url = await ref.getDownloadURL();
-  return { url, mediaType: isVideo ? "video" : "photo" };
-}

@@ -216,12 +216,3 @@ async function resetProducts(){
   });
   await batch.commit();
 }
-
-/* ---------- image upload (Firebase Storage) ---------- */
-async function uploadProductImage(file){
-  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
-  const blob = await resizeImageToBlob(file, 1000, 0.8);
-  const ref = storage.ref().child("products/" + Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9.]/g,"_"));
-  await ref.put(blob);
-  return await ref.getDownloadURL();
-}

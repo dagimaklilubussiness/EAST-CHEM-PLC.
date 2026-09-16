@@ -76,16 +76,10 @@
               </select>
             </div>
           </div>
-          <div class="grid2">
-            <div class="field">
-              <label for="f-img" data-i18n="ad_f_img">Image URL (optional)</label>
-              <input id="f-img" name="image" type="url" placeholder="https://…">
-            </div>
-            <div class="field">
-              <label for="f-img-upload" data-i18n="ad_f_image_upload">Or upload from your phone</label>
-              <input id="f-img-upload" type="file" accept="image/*">
-              <p id="f-img-status" class="note-box" style="display:none;padding:8px 12px;font-size:.8rem;margin-top:6px" data-i18n="ad_img_replace"></p>
-            </div>
+          <div class="field">
+            <label for="f-img" data-i18n="ad_f_img">Image URL (optional)</label>
+            <input id="f-img" name="image" type="text" placeholder="https://… or photo.jpg">
+            <p class="note-box" style="padding:8px 12px;font-size:.8rem;margin-top:6px" data-i18n="ad_img_note"></p>
           </div>
 
           <div class="lang-tab-bar" id="lang-tab-bar">
@@ -197,9 +191,15 @@
             <input id="ts-name" name="tname">
           </div>
           <div class="field">
-            <label for="ts-media-upload" data-i18n="ad_test_media_type">Photo or video?</label>
-            <input id="ts-media-upload" type="file" accept="image/*,video/*">
-            <p id="ts-media-status" style="font-size:.85rem;color:var(--ink-soft);margin-top:6px"></p>
+            <label for="ts-media" data-i18n="ad_test_media_type">Photo or video?</label>
+            <select id="ts-media" name="mediaType">
+              <option value="photo" data-i18n="ad_test_photo">Photo</option>
+              <option value="video" data-i18n="ad_test_video">Video (max 2 min)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ts-filename" data-i18n="ad_test_filename">File name you'll upload (e.g. story-abebe.jpg)</label>
+            <input id="ts-filename" name="filename" placeholder="story-abebe.jpg">
           </div>
           <p class="note-box" data-i18n="ad_test_note"></p>
           <div class="lang-tab-bar" data-tabgroup="test">
@@ -410,7 +410,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="i18n.js"></script>

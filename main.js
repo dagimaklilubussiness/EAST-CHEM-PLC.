@@ -41,27 +41,6 @@ async function loadSiteData(){
   CONTENT_CACHE = content;
 }
 
-/* ---------- shared image resize helper (used by admin uploads) ---------- */
-function resizeImageToBlob(file, maxDim, quality){
-  maxDim = maxDim || 900; quality = quality || 0.75;
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      if(w > h){ if(w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
-      else { if(h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
-      const canvas = document.createElement("canvas");
-      canvas.width = w; canvas.height = h;
-      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(blob => resolve(blob), "image/jpeg", quality);
-    };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("image load failed")); };
-    img.src = url;
-  });
-}
-
 /* ---------- translations (static interface chrome) ---------- */
 function applyI18n(){
   document.documentElement.lang = getLang();
@@ -390,12 +369,15 @@ function renderTestimonials(){
   const lang = getLang();
   wrap.innerHTML = items.map(x => {
     const media = x.mediaType === "video"
-      ? `<video src="${x.mediaUrl}" controls playsinline></video>`
-      : `<img src="${x.mediaUrl}" alt="">`;
+      ? `<video src="${x.filename}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
+      : `<img src="${x.filename}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
     const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
     return `
       <div class="testimonial-card">
-        <div class="img-slot testimonial-media">${x.mediaUrl ? media : ""}</div>
+        <div class="img-slot testimonial-media">
+          ${x.filename ? media : ""}
+          <div class="img-slot-hint"><b>${x.filename || ""}</b></div>
+        </div>
         <p class="testimonial-quote">"${quote}"</p>
         <p class="testimonial-name">— ${x.name || ""}</p>
       </div>

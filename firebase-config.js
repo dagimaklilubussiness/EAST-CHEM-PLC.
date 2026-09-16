@@ -18,10 +18,9 @@ const firebaseConfig = {
 
 const FIREBASE_READY = firebaseConfig.apiKey !== "YOUR_API_KEY";
 
-let db = null, storage = null, auth = null;
+let db = null, auth = null;
 if(FIREBASE_READY){
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
-  storage = firebase.storage();
   auth = firebase.auth();
 }

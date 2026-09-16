@@ -9,7 +9,6 @@
 let editingId = null;
 let editingCategoryId = null;
 let editingTestimonialId = null;
-let pendingTestimonialMedia = null; // { url, mediaType } after a successful upload
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadSiteData();
@@ -19,7 +18,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("add-product-btn")?.addEventListener("click", () => openForm(null));
   document.getElementById("cancel-form-btn")?.addEventListener("click", closeForm);
   document.getElementById("product-form")?.addEventListener("submit", saveProduct);
-  document.getElementById("f-img-upload")?.addEventListener("change", handleProductImageUpload);
 
   document.getElementById("add-category-btn")?.addEventListener("click", () => openCategoryForm(null));
   document.getElementById("cancel-category-btn")?.addEventListener("click", closeCategoryForm);
@@ -28,7 +26,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("add-testimonial-btn")?.addEventListener("click", () => openTestimonialForm(null));
   document.getElementById("cancel-testimonial-btn")?.addEventListener("click", closeTestimonialForm);
   document.getElementById("testimonial-form")?.addEventListener("submit", saveTestimonial);
-  document.getElementById("ts-media-upload")?.addEventListener("change", handleTestimonialMediaUpload);
 
   document.getElementById("social-form")?.addEventListener("submit", saveSocialForm);
   document.getElementById("content-hero-form")?.addEventListener("submit", saveHeroStatsForm);
@@ -171,21 +168,6 @@ function closeForm(){
   editingId = null;
 }
 
-async function handleProductImageUpload(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const status = document.getElementById("f-img-status");
-  status.style.display = "block";
-  status.textContent = "Uploading…";
-  try{
-    const url = await uploadProductImage(file);
-    document.getElementById("f-img").value = url;
-    status.textContent = t("ad_img_replace");
-  }catch(err){
-    status.textContent = err.message;
-  }
-}
-
 async function saveProduct(e){
   e.preventDefault();
   const form = e.target;
@@ -305,11 +287,11 @@ function renderTestimonialTable(){
 
 function openTestimonialForm(item){
   editingTestimonialId = item ? item.id : null;
-  pendingTestimonialMedia = item ? { url: item.mediaUrl, mediaType: item.mediaType } : null;
   const form = document.getElementById("testimonial-form");
   form.reset();
   form.tname.value = item ? (item.name || "") : "";
-  document.getElementById("ts-media-status").textContent = item && item.mediaUrl ? "✓ " + item.mediaType : "";
+  form.mediaType.value = item ? (item.mediaType || "photo") : "photo";
+  form.filename.value = item ? (item.filename || "") : "";
   setLangObj(form, "quote", item ? item.quote : null);
   document.getElementById("testimonial-form-panel").style.display = "block";
   document.getElementById("testimonial-form-panel").scrollIntoView({ behavior: "smooth" });
@@ -317,28 +299,6 @@ function openTestimonialForm(item){
 function closeTestimonialForm(){
   document.getElementById("testimonial-form-panel").style.display = "none";
   editingTestimonialId = null;
-  pendingTestimonialMedia = null;
-}
-
-async function handleTestimonialMediaUpload(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const status = document.getElementById("ts-media-status");
-  status.textContent = "Uploading…";
-  if(file.type.startsWith("video/") && file.size > 60 * 1024 * 1024){
-    if(!confirm("That video is quite large (over 60MB) and may use up your free Firebase quota faster. Upload anyway?")){
-      status.textContent = "";
-      e.target.value = "";
-      return;
-    }
-  }
-  try{
-    const result = await uploadTestimonialMedia(file);
-    pendingTestimonialMedia = result;
-    status.textContent = "✓ " + result.mediaType;
-  }catch(err){
-    status.textContent = err.message;
-  }
 }
 
 async function saveTestimonial(e){
@@ -347,8 +307,8 @@ async function saveTestimonial(e){
   const item = {
     id: editingTestimonialId || undefined,
     name: form.tname.value.trim(),
-    mediaType: pendingTestimonialMedia ? pendingTestimonialMedia.mediaType : "photo",
-    mediaUrl: pendingTestimonialMedia ? pendingTestimonialMedia.url : "",
+    mediaType: form.mediaType.value,
+    filename: form.filename.value.trim(),
     quote: buildLangObj(form, "quote")
   };
   try{

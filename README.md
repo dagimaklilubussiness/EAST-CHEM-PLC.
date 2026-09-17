@@ -83,7 +83,29 @@ files**, filename exact, and it appears within a minute of redeploy.
 | `about-2.jpg` | About page | Warehouse/storefront | 600×800, portrait |
 | `contact-1.jpg` | Contact page | Office/shop entrance | 800×600, landscape |
 | *(your choice)* | Product photo | Whatever you named it in the admin panel | 800×600ish |
-| *(your choice)* | Farmer-story photo/video | Whatever you named it in the admin panel | photo ~800×600, video under ~2 min |
+| *(your choice)* | Farmer-story photo/video | Whatever you named it in the admin panel | any size — GitHub hosts it |
+| `dagdevio-logo.png` | Footer credit | Small square developer logo | ~40×40, transparent PNG |
+
+## Farmer stories are per-product
+Each farmer story (photo/video + quote) is now tied to **one specific
+product**, chosen from a dropdown when you add/edit it in the admin
+panel. It appears on that product's detail popup only — not on the
+homepage. Only you (the logged-in owner) can add these; customers
+can't submit their own.
+
+## Getting the site to show up when someone searches "East Chem PLC"
+Two things help this:
+1. **Already done in the code:** page title, meta description, Open
+   Graph tags, and a sitemap (`sitemap.xml` + `robots.txt`) are set up
+   so Google can read and understand the site once it's crawled.
+2. **You still need to do this once, manually (free, ~10 min):** go to
+   **search.google.com/search-console**, add your site
+   (`east-chem-plc.vercel.app`), verify ownership (Google gives you a
+   simple method, often just confirming via your Vercel domain), then
+   submit `https://east-chem-plc.vercel.app/sitemap.xml` under
+   **Sitemaps**. After that, Google typically indexes the site within
+   a few days to a couple of weeks — there's no way to force it
+   faster, and no code change can substitute for this step.
 
 ## Fonts
 Headings use **Balderasu**; body text uses **Yebse** — both for

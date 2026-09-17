@@ -27,7 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   initModal();
   initContactForm();
   renderSocialIcons();
-  renderTestimonials();
 });
 
 async function loadSiteData(){
@@ -309,6 +308,29 @@ function initModal(){
   backdrop.querySelector(".modal-close")?.addEventListener("click", closeProductModal);
   document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeProductModal(); });
 }
+function productTestimonialsHTML(productId){
+  const lang = getLang();
+  const items = TESTIMONIALS_CACHE.filter(x => x.productId === productId);
+  if(!items.length) return "";
+  const cards = items.map(x => {
+    const media = x.mediaType === "video"
+      ? `<video src="${x.filename}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
+      : `<img src="${x.filename}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
+    const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
+    return `
+      <div class="testimonial-card">
+        <div class="img-slot testimonial-media">
+          ${x.filename ? media : ""}
+          <div class="img-slot-hint"><b>${x.filename || ""}</b></div>
+        </div>
+        <p class="testimonial-quote">"${quote}"</p>
+        <p class="testimonial-name">— ${x.name || ""}</p>
+      </div>
+    `;
+  }).join("");
+  return `<div class="modal-section"><h4>${t("pp_testimonials")}</h4><div class="testimonial-grid">${cards}</div></div>`;
+}
+
 function openProductModal(p){
   const backdrop = document.getElementById("product-modal");
   if(!backdrop || !p) return;
@@ -323,6 +345,7 @@ function openProductModal(p){
     <div class="modal-section"><h4>${t("pp_material")}</h4><p>${productField(p,"material",lang)}</p></div>
     <div class="modal-section"><h4>${t("pp_usage")}</h4><p>${productField(p,"usage",lang)}</p></div>
     <div class="modal-section"><h4>${t("pp_pack")}</h4><p>${productField(p,"pack",lang)}</p></div>
+    ${productTestimonialsHTML(p.id)}
     <div class="modal-section">
       <a class="btn btn-primary" href="contact.html?product=${encodeURIComponent(productField(p,"name","en"))}">${t("pp_inquire")}</a>
     </div>
@@ -356,33 +379,6 @@ function renderSocialIcons(){
     .join("");
   wrap.innerHTML = html;
   wrap.style.display = html ? "flex" : "none";
-}
-
-/* ---------- farmer stories (homepage) ---------- */
-function renderTestimonials(){
-  const wrap = document.getElementById("testimonials-grid");
-  const section = document.getElementById("testimonials-section");
-  if(!wrap) return;
-  const items = TESTIMONIALS_CACHE;
-  if(!items.length){ if(section) section.style.display = "none"; return; }
-  if(section) section.style.display = "";
-  const lang = getLang();
-  wrap.innerHTML = items.map(x => {
-    const media = x.mediaType === "video"
-      ? `<video src="${x.filename}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
-      : `<img src="${x.filename}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
-    const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
-    return `
-      <div class="testimonial-card">
-        <div class="img-slot testimonial-media">
-          ${x.filename ? media : ""}
-          <div class="img-slot-hint"><b>${x.filename || ""}</b></div>
-        </div>
-        <p class="testimonial-quote">"${quote}"</p>
-        <p class="testimonial-name">— ${x.name || ""}</p>
-      </div>
-    `;
-  }).join("");
 }
 
 /* ---------- contact form (mailto fallback — no backend needed for messages) ---------- */

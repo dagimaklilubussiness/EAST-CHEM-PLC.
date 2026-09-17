@@ -187,6 +187,10 @@
       <div id="testimonial-form-panel" class="admin-form" style="display:none">
         <form id="testimonial-form">
           <div class="field">
+            <label for="ts-product" data-i18n="ad_test_product">Which product is this about?</label>
+            <select id="ts-product" name="productId"></select>
+          </div>
+          <div class="field">
             <label for="ts-name" data-i18n="ad_test_name">Farmer's name</label>
             <input id="ts-name" name="tname">
           </div>
@@ -224,6 +228,7 @@
       <table class="admin-table">
         <thead><tr>
           <th data-i18n="ad_test_name">Farmer's name</th>
+          <th data-i18n="ad_test_product">Which product is this about?</th>
           <th data-i18n="ad_th_actions">Actions</th>
         </tr></thead>
         <tbody id="testimonial-tbody"></tbody>

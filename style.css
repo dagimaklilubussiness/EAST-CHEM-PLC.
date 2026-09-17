@@ -112,11 +112,11 @@ p{ margin:0 0 1em; max-width:62ch; }
 }
 .nav{
   display:flex; align-items:center; justify-content:space-between;
-  padding:14px 24px;
+  padding:10px 24px;
   max-width:var(--max); margin:0 auto;
 }
 .brand{ display:flex; align-items:center; gap:10px; text-decoration:none; }
-.brand-logo{ height:52px; width:auto; display:block; }
+.brand-logo{ height:74px; width:auto; display:block; }
 .brand-name{ font-family:var(--font-head); font-weight:700; font-size:1.15rem; color:var(--canopy-deep); letter-spacing:.2px; }
 .brand-tag{ display:block; font-family:var(--font-body); font-size:.62rem; color:var(--ink-soft); font-weight:500; }
 
@@ -347,15 +347,17 @@ p{ margin:0 0 1em; max-width:62ch; }
 .footer h4{ font-family:var(--font-head); color:#fff; margin-bottom:14px; font-size:1rem; }
 .footer ul{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:9px; font-size:.92rem; }
 .footer-bottom{ margin-top:40px; padding-top:20px; border-top:1px solid rgba(255,255,255,.2); font-size:.82rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
-.watermark{ opacity:.6; font-size:.78rem; }
+.watermark{ opacity:.6; font-size:.78rem; display:inline-flex; align-items:center; gap:6px; }
 .watermark a{ color:inherit; text-decoration:underline; }
+.watermark-logo{ height:20px; width:auto; display:inline-block; object-fit:contain; vertical-align:middle; }
 .social-row{ display:flex; gap:10px; margin-top:14px; }
 .social-icon{ width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.14); display:flex; align-items:center; justify-content:center; color:inherit; transition:background .2s ease; }
 .social-icon svg{ width:17px; height:17px; }
 .social-icon:hover{ background:rgba(255,255,255,.3); }
 
 /* ---------- farmer story testimonials ---------- */
-.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:30px; }
+.testimonial-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:14px; }
+.modal-section .testimonial-grid{ margin-top:10px; }
 .testimonial-card{ background:var(--paper); border:1px solid var(--cream-deep); border-radius:12px; padding:18px; }
 .testimonial-media{ aspect-ratio:4/3; border-radius:8px; background:var(--cream-deep); }
 .testimonial-quote{ font-style:italic; color:var(--ink-soft); margin:14px 0 8px; }
@@ -423,7 +425,7 @@ form .field textarea{ resize:vertical; min-height:110px; }
   .footer-grid{ grid-template-columns:1fr; }
   .hero-photo-overlay{ padding:22px 20px; }
   .hero-stats-card{ flex-direction:column; align-items:flex-start; margin-top:-24px; padding:20px 22px; gap:16px; }
-  .brand-logo{ height:44px; }
+  .brand-logo{ height:58px; }
   .product-card{ padding:1.1rem; }
 
   /* bigger, easier-to-tap buttons and form fields */

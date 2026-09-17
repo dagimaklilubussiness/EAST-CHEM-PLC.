@@ -149,7 +149,7 @@ function openForm(product){
   document.getElementById("form-title").textContent = product ? t("ad_form_edit") : t("ad_form_new");
   const form = document.getElementById("product-form");
   form.reset();
-  document.getElementById("f-img-status").style.display = "none";
+  document.getElementById("f-img-status")?.style && (document.getElementById("f-img-status").style.display = "none");
   SUPPORTED_LANGS.forEach(l => {
     form.querySelector(`[name="name_${l}"]`).value = product ? (product.name?.[l] || "") : "";
     form.querySelector(`[name="desc_${l}"]`).value = product ? (product.desc?.[l] || "") : "";
@@ -268,6 +268,20 @@ async function deleteCategoryHandler(id){
 /* =====================================================================
    FARMER STORIES (testimonials)
    ===================================================================== */
+function populateTestimonialProductSelect(selectedId){
+  const sel = document.getElementById("ts-product");
+  if(!sel) return;
+  const lang = getLang();
+  sel.innerHTML = PRODUCTS_CACHE.map(p => `<option value="${p.id}">${productField(p,"name",lang)}</option>`).join("");
+  if(selectedId) sel.value = selectedId;
+}
+
+function productNameById(id){
+  const lang = getLang();
+  const p = PRODUCTS_CACHE.find(p => p.id === id);
+  return p ? productField(p,"name",lang) : "—";
+}
+
 function renderTestimonialTable(){
   const tbody = document.getElementById("testimonial-tbody");
   if(!tbody) return;
@@ -275,6 +289,7 @@ function renderTestimonialTable(){
   tbody.innerHTML = items.map(x => `
     <tr>
       <td>${x.name || ""}</td>
+      <td>${productNameById(x.productId)}</td>
       <td>
         <button class="btn btn-outline btn-sm" data-ts-edit="${x.id}">${t("ad_edit")}</button>
         <button class="btn btn-danger btn-sm" data-ts-del="${x.id}">${t("ad_delete")}</button>
@@ -289,6 +304,7 @@ function openTestimonialForm(item){
   editingTestimonialId = item ? item.id : null;
   const form = document.getElementById("testimonial-form");
   form.reset();
+  populateTestimonialProductSelect(item ? item.productId : (PRODUCTS_CACHE[0]?.id));
   form.tname.value = item ? (item.name || "") : "";
   form.mediaType.value = item ? (item.mediaType || "photo") : "photo";
   form.filename.value = item ? (item.filename || "") : "";
@@ -306,6 +322,7 @@ async function saveTestimonial(e){
   const form = e.target;
   const item = {
     id: editingTestimonialId || undefined,
+    productId: form.productId.value,
     name: form.tname.value.trim(),
     mediaType: form.mediaType.value,
     filename: form.filename.value.trim(),

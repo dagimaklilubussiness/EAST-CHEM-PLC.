@@ -17,7 +17,9 @@
 <meta name="twitter:description" content="East Chem PLC supplies fertilizers, crop-protection chemicals and seed treatments to farmers and distributors across Ethiopia.">
 <meta name="twitter:image" content="https://east-chem-plc.vercel.app/logo.png">
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.png" type="image/png" sizes="256x256">
+<link rel="apple-touch-icon" href="favicon.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -93,33 +95,15 @@
         <form id="advisor-form">
           <div class="field">
             <label for="adv-crop" data-i18n="adv_crop">Crop</label>
-            <select id="adv-crop" name="crop">
-              <option value="teff" data-i18n="crop_teff">Teff</option>
-              <option value="maize" data-i18n="crop_maize">Maize</option>
-              <option value="wheat" data-i18n="crop_wheat">Wheat</option>
-              <option value="barley" data-i18n="crop_barley">Barley</option>
-              <option value="sorghum" data-i18n="crop_sorghum">Sorghum</option>
-              <option value="vegetables" data-i18n="crop_vegetables">Vegetables</option>
-            </select>
+            <select id="adv-crop" name="crop"></select>
           </div>
           <div class="field">
             <label for="adv-concern" data-i18n="adv_concern">What's the issue?</label>
-            <select id="adv-concern" name="concern">
-              <option value="weeds" data-i18n="concern_weeds">Weeds taking over the field</option>
-              <option value="insects" data-i18n="concern_insects">Insects or pests on the crop</option>
-              <option value="fungal" data-i18n="concern_fungal">Leaf spots or fungal disease</option>
-              <option value="fertility" data-i18n="concern_fertility">Low soil fertility / poor growth</option>
-              <option value="seedborne" data-i18n="concern_seedborne">Protecting seed before sowing</option>
-            </select>
+            <select id="adv-concern" name="concern"></select>
           </div>
           <div class="field">
             <label for="adv-soil" data-i18n="adv_soil">Soil condition</label>
-            <select id="adv-soil" name="soil">
-              <option value="unsure" data-i18n="soil_unsure">Not sure</option>
-              <option value="sandy" data-i18n="soil_sandy">Sandy, drains fast</option>
-              <option value="clay" data-i18n="soil_clay">Heavy / clay soil</option>
-              <option value="loamy" data-i18n="soil_loamy">Balanced / loamy</option>
-            </select>
+            <select id="adv-soil" name="soil"></select>
           </div>
           <button type="submit" class="btn btn-primary" data-i18n="adv_btn">Show recommendation</button>
         </form>
@@ -138,29 +122,10 @@
   </div>
 </section>
 
-<section class="band">
+<section class="band" id="gallery-section">
   <div class="container">
     <h2 data-i18n="gallery_h">A look at East Chem</h2>
-    <div class="gallery-grid">
-      <div>
-        <div class="img-slot" data-slot="gallery-1.jpg">
-          <img src="gallery-1.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>gallery-1.jpg</b><span data-i18n="slot_gallery1">Your shop front, warehouse or delivery truck</span></div>
-        </div>
-      </div>
-      <div>
-        <div class="img-slot" data-slot="gallery-2.jpg">
-          <img src="gallery-2.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>gallery-2.jpg</b><span data-i18n="slot_gallery2">Staff or farmers at work</span></div>
-        </div>
-      </div>
-      <div>
-        <div class="img-slot" data-slot="gallery-3.jpg">
-          <img src="gallery-3.jpg" alt="" onerror="this.parentElement.classList.add('img-missing')">
-          <div class="img-slot-hint"><b>gallery-3.jpg</b><span data-i18n="slot_gallery3">A healthy field or harvest</span></div>
-        </div>
-      </div>
-    </div>
+    <div class="gallery-grid"></div>
   </div>
 </section>
 

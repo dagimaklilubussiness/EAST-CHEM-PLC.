@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Owner panel — East Chem PLC</title>
 <link rel="stylesheet" href="style.css">
-<link rel="icon" href="favicon.png" type="image/png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.png" type="image/png" sizes="256x256">
+<link rel="apple-touch-icon" href="favicon.png">
 </head>
 <body data-page="admin">
 
@@ -178,6 +180,79 @@
         <tbody id="category-tbody"></tbody>
       </table>
 
+      <!-- ================= HOMEPAGE ADVISOR ================= -->
+      <div class="admin-section-h">
+        <h2 data-i18n="ad_adv_h" style="margin:0">Homepage advisor (crop / issue / soil options)</h2>
+      </div>
+      <p class="admin-hint" data-i18n="ad_adv_hint">These are the choices shown in the "Not sure where to start?" box on the homepage. Add, edit or remove options below, in any of the 4 languages.</p>
+
+      <h3 data-i18n="ad_adv_crops_h">Crop options</h3>
+      <form id="adv-crop-form" class="admin-form">
+        <div class="lang-tab-bar" data-tabgroup="advcrop">
+          <button type="button" class="lang-tab active" data-lang="en">English</button>
+          <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+          <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+          <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+        </div>
+        <div data-tabgroup-panes="advcrop">
+          <div class="lang-pane active" data-lang="en"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advcrop_label_en"></div></div>
+          <div class="lang-pane" data-lang="am"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advcrop_label_am"></div></div>
+          <div class="lang-pane" data-lang="om"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advcrop_label_om"></div></div>
+          <div class="lang-pane" data-lang="ti"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advcrop_label_ti"></div></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" data-i18n="ad_adv_add" style="margin-top:10px">Add option</button>
+      </form>
+      <table class="admin-table">
+        <thead><tr><th data-i18n="ad_adv_label">Label</th><th data-i18n="ad_th_actions">Actions</th></tr></thead>
+        <tbody id="adv-crop-tbody"></tbody>
+      </table>
+
+      <h3 data-i18n="ad_adv_concerns_h" style="margin-top:30px">Issue options</h3>
+      <form id="adv-concern-form" class="admin-form">
+        <div class="field">
+          <label for="advc-category" data-i18n="ad_adv_category">Recommends which category?</label>
+          <select id="advc-category" name="categoryId"></select>
+        </div>
+        <div class="lang-tab-bar" data-tabgroup="advconcern">
+          <button type="button" class="lang-tab active" data-lang="en">English</button>
+          <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+          <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+          <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+        </div>
+        <div data-tabgroup-panes="advconcern">
+          <div class="lang-pane active" data-lang="en"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advconcern_label_en"></div></div>
+          <div class="lang-pane" data-lang="am"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advconcern_label_am"></div></div>
+          <div class="lang-pane" data-lang="om"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advconcern_label_om"></div></div>
+          <div class="lang-pane" data-lang="ti"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advconcern_label_ti"></div></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" data-i18n="ad_adv_add" style="margin-top:10px">Add option</button>
+      </form>
+      <table class="admin-table">
+        <thead><tr><th data-i18n="ad_adv_label">Label</th><th data-i18n="ad_adv_category">Recommends which category?</th><th data-i18n="ad_th_actions">Actions</th></tr></thead>
+        <tbody id="adv-concern-tbody"></tbody>
+      </table>
+
+      <h3 data-i18n="ad_adv_soils_h" style="margin-top:30px">Soil condition options</h3>
+      <form id="adv-soil-form" class="admin-form">
+        <div class="lang-tab-bar" data-tabgroup="advsoil">
+          <button type="button" class="lang-tab active" data-lang="en">English</button>
+          <button type="button" class="lang-tab" data-lang="am">አማርኛ</button>
+          <button type="button" class="lang-tab" data-lang="om">Afaan Oromoo</button>
+          <button type="button" class="lang-tab" data-lang="ti">ትግርኛ</button>
+        </div>
+        <div data-tabgroup-panes="advsoil">
+          <div class="lang-pane active" data-lang="en"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advsoil_label_en"></div></div>
+          <div class="lang-pane" data-lang="am"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advsoil_label_am"></div></div>
+          <div class="lang-pane" data-lang="om"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advsoil_label_om"></div></div>
+          <div class="lang-pane" data-lang="ti"><div class="field"><label data-i18n="ad_adv_label">Label</label><input name="advsoil_label_ti"></div></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" data-i18n="ad_adv_add" style="margin-top:10px">Add option</button>
+      </form>
+      <table class="admin-table">
+        <thead><tr><th data-i18n="ad_adv_label">Label</th><th data-i18n="ad_th_actions">Actions</th></tr></thead>
+        <tbody id="adv-soil-tbody"></tbody>
+      </table>
+
       <!-- ================= FARMER STORIES ================= -->
       <div class="admin-section-h">
         <h2 data-i18n="ad_test_h" style="margin:0">Farmer stories</h2>
@@ -305,6 +380,11 @@
           <div class="field"><input name="stat2_num" placeholder="40+"></div>
         </div>
         <div class="field"><input name="stat3_num" placeholder="6,000+"></div>
+        <h4 style="margin-top:18px" data-i18n="ad_gallery_h">Homepage gallery photos ("A look at East Chem")</h4>
+        <p class="admin-hint" data-i18n="ad_gallery_hint">Upload each photo to GitHub first, then type its exact filename below (or paste a link). Leave a box empty to hide that photo — it won't show a placeholder to visitors.</p>
+        <div class="field"><label data-i18n="ad_gallery_slot">Photo 1</label><input name="gallery_1" placeholder="gallery-1.jpg"></div>
+        <div class="field"><label data-i18n="ad_gallery_slot">Photo 2</label><input name="gallery_2" placeholder="gallery-2.jpg"></div>
+        <div class="field"><label data-i18n="ad_gallery_slot">Photo 3</label><input name="gallery_3" placeholder="gallery-3.jpg"></div>
         <button type="submit" class="btn btn-primary" data-i18n="ad_save_generic">Save</button>
       </form>
 

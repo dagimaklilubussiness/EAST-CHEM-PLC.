@@ -214,7 +214,7 @@ p{ margin:0 0 1em; max-width:62ch; }
 }
 
 /* ---------- category photo cards ---------- */
-.cat-photo-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:22px; margin-top:34px; }
+.cat-photo-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,200px)); gap:18px; margin-top:28px; justify-content:center; }
 .cat-photo-card{
   display:block; text-decoration:none; color:var(--ink);
   border-radius:12px; overflow:hidden; background:var(--paper);
@@ -223,10 +223,10 @@ p{ margin:0 0 1em; max-width:62ch; }
 }
 .cat-photo-card:hover{ transform:translateY(-5px); box-shadow:0 16px 32px rgba(20,30,15,.13); }
 .cat-photo-card:hover .img-slot img{ transform:scale(1.06); }
-.cat-photo-card .img-slot{ aspect-ratio:4/3; border-radius:0; }
-.cat-photo-label{ padding:16px 18px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.cat-photo-label h3{ margin:0; font-size:1.05rem; }
-.cat-photo-label span{ font-size:.82rem; font-weight:700; color:var(--canopy); white-space:nowrap; }
+.cat-photo-card .img-slot{ aspect-ratio:16/11; border-radius:0; }
+.cat-photo-label{ padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.cat-photo-label h3{ margin:0; font-size:.92rem; }
+.cat-photo-label span{ font-size:.72rem; font-weight:700; color:var(--canopy); white-space:nowrap; }
 
 /* ---------- simple photo gallery band ---------- */
 .gallery-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:22px; margin-top:30px; }
@@ -386,6 +386,7 @@ form .field textarea{ resize:vertical; min-height:110px; }
 .admin-table th,.admin-table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--cream-deep); font-size:.92rem; vertical-align:top; }
 .admin-table th{ background:var(--cream-deep); font-family:var(--font-head); }
 .admin-form{ background:var(--paper); border:1px solid var(--cream-deep); border-radius:12px; padding:28px; margin-bottom:30px; }
+.admin-hint{ font-size:.82rem; color:var(--ink-soft); margin:-6px 0 12px; }
 .admin-section-h{ display:flex; justify-content:space-between; align-items:center; margin:44px 0 16px; }
 .admin-section-h h2{ margin:0; }
 .admin-form .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:0 20px; }

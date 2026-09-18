@@ -1,0 +1,35 @@
+EAST CHEM PLC — favicon / Google search icon fix
+==================================================
+
+Why Google shows a globe icon instead of your logo:
+Google reads the icon from a `favicon.ico` file at your site's root
+first, and your repo never had one — only `favicon.png`. Missing
+`favicon.ico` is the most common reason Google falls back to a
+generic globe (sometimes shown as the hosting provider's icon).
+
+REPLACE these 5 files (same names, root folder):
+  - index.html
+  - about.html
+  - contact.html
+  - products.html
+  - admin.html
+(each now declares favicon.ico first, then favicon.png, then an
+apple-touch-icon — all pointing at your existing logo icon)
+
+ADD this new file:
+  - favicon.ico   (a proper multi-size icon file generated from your
+                    existing favicon.png — nothing to design, just
+                    upload it)
+
+After uploading, wait ~1 minute for Vercel to redeploy, then:
+  1. Visit https://east-chem-plc.vercel.app/favicon.ico directly —
+     you should see the small logo icon load (not a 404).
+  2. In Google Search Console (Settings you already set up), open
+     URL Inspection, enter your homepage URL, and click
+     "Request Indexing" again — this nudges Google to recrawl and
+     pick up the new icon sooner.
+
+One thing to know: even after this, Google can take anywhere from a
+few days to a few weeks to actually refresh the icon shown in search
+results — there's no way to force it instantly, and repeating
+"Request Indexing" many times in a row does not speed it up further.

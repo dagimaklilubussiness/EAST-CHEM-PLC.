@@ -10,6 +10,7 @@ var CATEGORIES_CACHE = [];
 var TESTIMONIALS_CACHE = [];
 var SOCIAL_CACHE = {};
 var CONTENT_CACHE = {};
+var ADVISOR_CACHE = { crops:[], concerns:[], soils:[] };
 
 document.addEventListener("DOMContentLoaded", async () => {
   applyI18n();
@@ -23,6 +24,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderAboutContent();
   initAdvisor();
   renderCategoryGrid();
+  renderGallery();
   initProductGrids();
   initModal();
   initContactForm();
@@ -30,14 +32,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadSiteData(){
-  const [products, categories, testimonials, social, content] = await Promise.all([
-    fetchProducts(), fetchCategories(), fetchTestimonials(), fetchSocialLinks(), fetchContent()
+  const [products, categories, testimonials, social, content, advisor] = await Promise.all([
+    fetchProducts(), fetchCategories(), fetchTestimonials(), fetchSocialLinks(), fetchContent(), fetchAdvisorOptions()
   ]);
   PRODUCTS_CACHE = products;
   CATEGORIES_CACHE = categories;
   TESTIMONIALS_CACHE = testimonials;
   SOCIAL_CACHE = social;
   CONTENT_CACHE = content;
+  ADVISOR_CACHE = advisor;
 }
 
 /* ---------- translations (static interface chrome) ---------- */
@@ -162,22 +165,29 @@ function initCounters(){
   });
 }
 
-/* ---------- crop & soil advisor (home page) ---------- */
-const ADVISOR_MAP = {
-  weeds: "herbicide",
-  insects: "pesticide",
-  fungal: "fungicide",
-  fertility: "fertilizer",
-  seedborne: "seed"
-};
+/* ---------- crop & soil advisor (home page) — fully admin-editable ---------- */
+function advisorLabel(item, lang){
+  return (item.label && (item.label[lang] || item.label.en)) || "";
+}
+function renderAdvisorSelects(){
+  const lang = getLang();
+  const cropSel = document.getElementById("adv-crop");
+  const concernSel = document.getElementById("adv-concern");
+  const soilSel = document.getElementById("adv-soil");
+  if(cropSel) cropSel.innerHTML = ADVISOR_CACHE.crops.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
+  if(concernSel) concernSel.innerHTML = ADVISOR_CACHE.concerns.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
+  if(soilSel) soilSel.innerHTML = ADVISOR_CACHE.soils.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
+}
 function initAdvisor(){
   const form = document.getElementById("advisor-form");
   if(!form) return;
+  renderAdvisorSelects();
   const result = document.getElementById("advisor-result");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const concern = form.concern.value;
-    const catId = ADVISOR_MAP[concern] || "fertilizer";
+    const concernId = form.concern.value;
+    const concern = ADVISOR_CACHE.concerns.find(c => c.id === concernId);
+    const catId = (concern && concern.categoryId) || (CATEGORIES_CACHE[0] && CATEGORIES_CACHE[0].id);
     const cat = getCategory(catId);
     const lang = getLang();
     result.classList.remove("empty");
@@ -187,6 +197,23 @@ function initAdvisor(){
       <a class="btn btn-primary btn-sm" href="products.html?cat=${catId}">${t("strip_view")}</a>
     `;
   });
+}
+
+/* ---------- homepage gallery (admin-editable, hides empty slots) ---------- */
+function renderGallery(){
+  const grid = document.querySelector(".gallery-grid");
+  const section = document.getElementById("gallery-section");
+  if(!grid) return;
+  const photos = (CONTENT_CACHE.gallery || []).filter(x => x && x.trim());
+  if(!photos.length){ if(section) section.style.display = "none"; return; }
+  if(section) section.style.display = "";
+  grid.innerHTML = photos.map(src => `
+    <div>
+      <div class="img-slot">
+        <img src="${src}" alt="">
+      </div>
+    </div>
+  `).join("");
 }
 
 /* ---------- category grid (homepage) ---------- */

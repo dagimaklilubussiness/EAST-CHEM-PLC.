@@ -32,10 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("content-contact-form")?.addEventListener("submit", saveContactContentForm);
   document.getElementById("content-about-form")?.addEventListener("submit", saveAboutContentForm);
 
-  document.getElementById("adv-crop-form")?.addEventListener("submit", saveAdvisorCrop);
-  document.getElementById("adv-concern-form")?.addEventListener("submit", saveAdvisorConcern);
-  document.getElementById("adv-soil-form")?.addEventListener("submit", saveAdvisorSoil);
-
   document.getElementById("reset-btn")?.addEventListener("click", resetProductsHandler);
 });
 
@@ -52,8 +48,22 @@ function initGate(){
     return;
   }
 
-  auth.onAuthStateChanged(user => {
+  auth.onAuthStateChanged(async user => {
+    const errEl = document.getElementById("gate-error");
     if(user){
+      try{
+        const doc = await db.collection("staff").doc(user.uid).get();
+        if(!doc.exists || doc.data().role !== "owner" || doc.data().active === false){
+          errEl.hidden = false;
+          errEl.textContent = "ይህ ገጽ ለባለቤት ብቻ የተፈቀደ ነው።";
+          auth.signOut();
+          return;
+        }
+      }catch(e){
+        errEl.hidden = false; errEl.textContent = e.message;
+        auth.signOut();
+        return;
+      }
       gate.style.display = "none";
       wrap.classList.add("open");
       renderEverything();
@@ -83,10 +93,6 @@ function renderEverything(){
   populateHeroStatsForm();
   populateContactContentForm();
   populateAboutForm();
-  renderAdvisorCropsTable();
-  renderAdvisorConcernsTable();
-  renderAdvisorSoilsTable();
-  populateAdvisorConcernCategorySelect();
 }
 
 async function refreshAndRerender(){
@@ -157,7 +163,7 @@ function openForm(product){
   document.getElementById("form-title").textContent = product ? t("ad_form_edit") : t("ad_form_new");
   const form = document.getElementById("product-form");
   form.reset();
-  document.getElementById("f-img-status")?.style && (document.getElementById("f-img-status").style.display = "none");
+  document.getElementById("f-img-status").style.display = "none";
   SUPPORTED_LANGS.forEach(l => {
     form.querySelector(`[name="name_${l}"]`).value = product ? (product.name?.[l] || "") : "";
     form.querySelector(`[name="desc_${l}"]`).value = product ? (product.desc?.[l] || "") : "";
@@ -276,20 +282,6 @@ async function deleteCategoryHandler(id){
 /* =====================================================================
    FARMER STORIES (testimonials)
    ===================================================================== */
-function populateTestimonialProductSelect(selectedId){
-  const sel = document.getElementById("ts-product");
-  if(!sel) return;
-  const lang = getLang();
-  sel.innerHTML = PRODUCTS_CACHE.map(p => `<option value="${p.id}">${productField(p,"name",lang)}</option>`).join("");
-  if(selectedId) sel.value = selectedId;
-}
-
-function productNameById(id){
-  const lang = getLang();
-  const p = PRODUCTS_CACHE.find(p => p.id === id);
-  return p ? productField(p,"name",lang) : "—";
-}
-
 function renderTestimonialTable(){
   const tbody = document.getElementById("testimonial-tbody");
   if(!tbody) return;
@@ -297,7 +289,6 @@ function renderTestimonialTable(){
   tbody.innerHTML = items.map(x => `
     <tr>
       <td>${x.name || ""}</td>
-      <td>${productNameById(x.productId)}</td>
       <td>
         <button class="btn btn-outline btn-sm" data-ts-edit="${x.id}">${t("ad_edit")}</button>
         <button class="btn btn-danger btn-sm" data-ts-del="${x.id}">${t("ad_delete")}</button>
@@ -312,7 +303,6 @@ function openTestimonialForm(item){
   editingTestimonialId = item ? item.id : null;
   const form = document.getElementById("testimonial-form");
   form.reset();
-  populateTestimonialProductSelect(item ? item.productId : (PRODUCTS_CACHE[0]?.id));
   form.tname.value = item ? (item.name || "") : "";
   form.mediaType.value = item ? (item.mediaType || "photo") : "photo";
   form.filename.value = item ? (item.filename || "") : "";
@@ -330,7 +320,6 @@ async function saveTestimonial(e){
   const form = e.target;
   const item = {
     id: editingTestimonialId || undefined,
-    productId: form.productId.value,
     name: form.tname.value.trim(),
     mediaType: form.mediaType.value,
     filename: form.filename.value.trim(),
@@ -388,11 +377,6 @@ function populateHeroStatsForm(){
     if(numEl) numEl.value = s.number || "";
     setLangObj(form, `stat${i+1}_label`, s.label);
   });
-  const gallery = CONTENT_CACHE.gallery || [];
-  [0,1,2].forEach(i => {
-    const el = form.querySelector(`[name="gallery_${i+1}"]`);
-    if(el) el.value = gallery[i] || "";
-  });
 }
 async function saveHeroStatsForm(e){
   e.preventDefault();
@@ -406,11 +390,9 @@ async function saveHeroStatsForm(e){
     number: form.querySelector(`[name="stat${i}_num"]`).value.trim(),
     label: buildLangObj(form, `stat${i}_label`)
   }));
-  const gallery = [1,2,3].map(i => form.querySelector(`[name="gallery_${i}"]`).value.trim());
   try{
     await writeContent("hero", hero);
     await writeContent("stats", stats);
-    await writeContent("gallery", gallery);
     await refreshAndRerender();
     alert(t("ad_content_saved") + " ✓");
   }catch(err){ alert(err.message); }
@@ -485,107 +467,5 @@ async function saveAboutContentForm(e){
     await writeContent("about", about);
     await refreshAndRerender();
     alert(t("ad_content_saved") + " ✓");
-  }catch(err){ alert(err.message); }
-}
-
-/* =====================================================================
-   HOMEPAGE ADVISOR — crop / issue / soil options (add + delete, 4 langs)
-   ===================================================================== */
-function populateAdvisorConcernCategorySelect(){
-  const sel = document.getElementById("advc-category");
-  if(!sel) return;
-  const lang = getLang();
-  sel.innerHTML = CATEGORIES_CACHE.map(c => `<option value="${c.id}">${catField(c,"name",lang)}</option>`).join("");
-}
-
-function renderAdvisorCropsTable(){
-  const tbody = document.getElementById("adv-crop-tbody");
-  if(!tbody) return;
-  const lang = getLang();
-  tbody.innerHTML = ADVISOR_CACHE.crops.map((c,i) => `
-    <tr>
-      <td>${advisorLabel(c,lang)}</td>
-      <td><button class="btn btn-danger btn-sm" data-adv-del="crops" data-adv-idx="${i}">${t("ad_delete")}</button></td>
-    </tr>
-  `).join("");
-  wireAdvisorDeleteButtons(tbody);
-}
-function renderAdvisorConcernsTable(){
-  const tbody = document.getElementById("adv-concern-tbody");
-  if(!tbody) return;
-  const lang = getLang();
-  tbody.innerHTML = ADVISOR_CACHE.concerns.map((c,i) => `
-    <tr>
-      <td>${advisorLabel(c,lang)}</td>
-      <td>${catField(getCategory(c.categoryId),"name",lang)}</td>
-      <td><button class="btn btn-danger btn-sm" data-adv-del="concerns" data-adv-idx="${i}">${t("ad_delete")}</button></td>
-    </tr>
-  `).join("");
-  wireAdvisorDeleteButtons(tbody);
-}
-function renderAdvisorSoilsTable(){
-  const tbody = document.getElementById("adv-soil-tbody");
-  if(!tbody) return;
-  const lang = getLang();
-  tbody.innerHTML = ADVISOR_CACHE.soils.map((c,i) => `
-    <tr>
-      <td>${advisorLabel(c,lang)}</td>
-      <td><button class="btn btn-danger btn-sm" data-adv-del="soils" data-adv-idx="${i}">${t("ad_delete")}</button></td>
-    </tr>
-  `).join("");
-  wireAdvisorDeleteButtons(tbody);
-}
-function wireAdvisorDeleteButtons(tbody){
-  tbody.querySelectorAll("[data-adv-del]").forEach(b => {
-    b.addEventListener("click", async () => {
-      if(!confirm(t("ad_confirm_delete"))) return;
-      const list = b.dataset.advDel;
-      const idx = parseInt(b.dataset.advIdx, 10);
-      ADVISOR_CACHE[list].splice(idx, 1);
-      try{
-        await writeAdvisorOptions(ADVISOR_CACHE);
-        await refreshAndRerender();
-      }catch(err){ alert(err.message); }
-    });
-  });
-}
-function slugify(text){
-  return (text || "opt").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"") || ("opt" + Date.now());
-}
-async function saveAdvisorCrop(e){
-  e.preventDefault();
-  const form = e.target;
-  const label = buildLangObj(form, "advcrop_label");
-  if(!label.en){ alert(t("ad_adv_need_en")); return; }
-  ADVISOR_CACHE.crops.push({ id: slugify(label.en) + "-" + Date.now().toString(36), label });
-  try{
-    await writeAdvisorOptions(ADVISOR_CACHE);
-    form.reset();
-    await refreshAndRerender();
-  }catch(err){ alert(err.message); }
-}
-async function saveAdvisorConcern(e){
-  e.preventDefault();
-  const form = e.target;
-  const label = buildLangObj(form, "advconcern_label");
-  if(!label.en){ alert(t("ad_adv_need_en")); return; }
-  const categoryId = form.categoryId.value;
-  ADVISOR_CACHE.concerns.push({ id: slugify(label.en) + "-" + Date.now().toString(36), categoryId, label });
-  try{
-    await writeAdvisorOptions(ADVISOR_CACHE);
-    form.reset();
-    await refreshAndRerender();
-  }catch(err){ alert(err.message); }
-}
-async function saveAdvisorSoil(e){
-  e.preventDefault();
-  const form = e.target;
-  const label = buildLangObj(form, "advsoil_label");
-  if(!label.en){ alert(t("ad_adv_need_en")); return; }
-  ADVISOR_CACHE.soils.push({ id: slugify(label.en) + "-" + Date.now().toString(36), label });
-  try{
-    await writeAdvisorOptions(ADVISOR_CACHE);
-    form.reset();
-    await refreshAndRerender();
   }catch(err){ alert(err.message); }
 }

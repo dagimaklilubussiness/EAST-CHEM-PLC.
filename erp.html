@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ውስጣዊ ስርዓት — East Chem PLC</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1E7A3E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EC ERP">
+</head>
+<body data-page="erp">
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="logo.png" alt="East Chem PLC" class="brand-logo">
+      <span class="brand-tag">ውስጣዊ ስርዓት (ERP)</span>
+    </a>
+    <div class="nav-right">
+      <button id="logout-btn" class="btn btn-outline btn-sm" style="display:none">ውጣ</button>
+    </div>
+  </nav>
+</header>
+
+<!-- ================= LOGIN GATE ================= -->
+<div id="erp-gate" class="admin-gate">
+  <h1>ውስጣዊ ስርዓት መግቢያ</h1>
+  <p class="note-box">ይህ ገጽ ለባለቤቱና ለሰራተኞች ብቻ የተከለለ ነው።</p>
+  <form id="gate-form">
+    <div class="field">
+      <label for="gate-email">ኢሜይል</label>
+      <input id="gate-email" name="email" type="email" required>
+    </div>
+    <div class="field">
+      <label for="gate-password">የይለፍ ቃል</label>
+      <input id="gate-password" name="password" type="password" required>
+    </div>
+    <p id="gate-error" hidden style="color:#7a2c22"></p>
+    <button type="submit" class="btn btn-primary">ግባ</button>
+  </form>
+  <p id="gate-not-configured" class="note-box" hidden>Firebase ገና አልተገናኘም። እባክዎ በREADME የተጠቀሱትን ደረጃዎች ይከተሉ።</p>
+  <p id="gate-no-access" class="note-box" hidden style="background:#FBE3DC;border-color:#E3A98F;color:#7a2c22">
+    ይህ ኢሜይል በሰራተኞች ዝርዝር ውስጥ አልተመዘገበም። ባለቤቱ ከ«ሰራተኞች» ክፍል ውስጥ ሊያስገባዎት ይገባል።
+  </p>
+</div>
+
+<!-- ================= MAIN APP ================= -->
+<div id="erp-wrap" class="admin-wrap">
+  <section class="band-tight">
+    <div class="container">
+
+      <div id="erp-tabs" class="filter-bar" style="margin-bottom:30px"></div>
+
+      <!-- ---------------- DASHBOARD (owner only) ---------------- -->
+      <div id="tab-dashboard" class="erp-tab">
+        <h2 style="margin:0 0 20px">ዳሽቦርድ</h2>
+        <div class="hero-stats-card" id="dash-stats" style="margin:0 0 30px"></div>
+        <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:30px">
+          <div id="dash-top-customers"></div>
+          <div id="dash-top-products"></div>
+        </div>
+        <div id="dash-lowstock" style="margin-top:20px"></div>
+      </div>
+
+      <!-- ---------------- INVENTORY ---------------- -->
+      <div id="tab-inventory" class="erp-tab" style="display:none">
+        <div class="admin-section-h">
+          <h2 style="margin:0">ክምችት</h2>
+          <button id="add-item-btn" class="btn btn-primary btn-sm">አዲስ ንጥል ጨምር</button>
+        </div>
+
+        <div id="item-form-panel" class="admin-form" style="display:none">
+          <h3 id="item-form-title">አዲስ ንጥል</h3>
+          <form id="item-form">
+            <div class="grid2">
+              <div class="field"><label>ስም</label><input name="name" required></div>
+              <div class="field"><label>መለኪያ (ኪግ፣ ሊትር፣ ፍሬ...)</label><input name="unit" required></div>
+            </div>
+            <div class="grid2">
+              <div class="field" id="stock-qty-field"><label>የመነሻ ክምችት</label><input name="stockQty" type="number" step="any" required></div>
+              <div class="field"><label>ዝቅተኛ ማስጠንቀቂያ ደረጃ</label><input name="lowStockThreshold" type="number" step="any" value="5"></div>
+            </div>
+            <p id="stock-qty-note" class="note-box" style="display:none">ክምችት መጠን ለመቀየር «ክምችት አስተካክል» ይጠቀሙ፤ እዚህ ስም/መለኪያ/ዋጋ ብቻ ነው የሚስተካከለው።</p>
+            <div class="field" id="cost-price-field"><label>የግዢ ዋጋ (ለባለቤት ብቻ ይታያል)</label><input name="costPrice" type="number" step="any"></div>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">አስቀምጥ</button>
+              <button type="button" id="cancel-item-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="admin-form">
+          <h3>ክምችት አስተካክል</h3>
+          <form id="adjust-form">
+            <div class="grid2">
+              <div class="field"><label>ንጥል</label><select id="adjust-item" name="itemId" required></select></div>
+              <div class="field"><label>ለውጥ መጠን (ለመጨመር አወንታዊ፣ ለመቀነስ አሉታዊ ቁጥር ያስገቡ፣ ለምሳሌ 10 ወይም -5)</label><input name="delta" type="number" step="any" required></div>
+            </div>
+            <div class="field"><label>ምክንያት (አማራጭ)</label><input name="note" placeholder="ለምሳሌ: አዲስ ግዢ፣ የተበላሸ እቃ..."></div>
+            <button type="submit" class="btn btn-primary">ክምችት አዘምን</button>
+          </form>
+        </div>
+
+        <table class="admin-table">
+          <thead><tr>
+            <th>ስም</th><th>ያለው ክምችት</th><th>መለኪያ</th><th id="cost-col-h">የግዢ ዋጋ</th><th>ተግባር</th>
+          </tr></thead>
+          <tbody id="inventory-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ---------------- SALES ---------------- -->
+      <div id="tab-sales" class="erp-tab" style="display:none">
+        <div class="admin-section-h">
+          <h2 style="margin:0">ሽያጭ</h2>
+          <button id="add-sale-btn" class="btn btn-primary btn-sm">አዲስ ሽያጭ መዝግብ</button>
+        </div>
+
+        <div id="sale-form-panel" class="admin-form" style="display:none">
+          <h3>አዲስ ሽያጭ</h3>
+          <form id="sale-form">
+            <div id="sale-lines"></div>
+            <button type="button" id="add-line-btn" class="btn btn-outline btn-sm" style="margin-bottom:16px">+ ንጥል አክል</button>
+            <div class="field">
+              <label>ነባር ደንበኛ ይምረጡ (አማራጭ)</label>
+              <select id="sale-customer-select"><option value="">-- ወይም ከታች በነፃ ይጻፉ --</option></select>
+            </div>
+            <div class="grid2">
+              <div class="field"><label>የደንበኛ ስም (አማራጭ)</label><input name="customerName" id="sale-customer-name"></div>
+              <div class="field"><label>የደንበኛ ስልክ (አማራጭ)</label><input name="customerPhone" id="sale-customer-phone"></div>
+            </div>
+            <div class="field"><label>ማስታወሻ (አማራጭ)</label><input name="notes"></div>
+            <p style="font-weight:700;font-size:1.1rem" id="sale-total-display">ጠቅላላ ድምር: 0</p>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">ሽያጭ አስቀምጥ</button>
+              <button type="button" id="cancel-sale-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+
+        <table class="admin-table">
+          <thead><tr>
+            <th>ቀን</th><th>ንጥሎች</th><th>ጠቅላላ ድምር</th><th>ደንበኛ</th><th>የመዘገበው</th><th>ተግባር</th>
+          </tr></thead>
+          <tbody id="sales-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ---------------- CUSTOMERS ---------------- -->
+      <div id="tab-customers" class="erp-tab" style="display:none">
+        <div class="admin-section-h">
+          <h2 style="margin:0">ደንበኞች</h2>
+          <button id="add-customer-btn" class="btn btn-primary btn-sm">ደንበኛ ጨምር</button>
+        </div>
+
+        <div id="customer-form-panel" class="admin-form" style="display:none">
+          <form id="customer-form">
+            <div class="grid2">
+              <div class="field"><label>ስም</label><input name="name" required></div>
+              <div class="field"><label>ስልክ</label><input name="phone"></div>
+            </div>
+            <div class="field"><label>አድራሻ (አማራጭ)</label><input name="address"></div>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">አስቀምጥ</button>
+              <button type="button" id="cancel-customer-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+          <input type="search" id="customer-search" placeholder="ደንበኛ ይፈልጉ…">
+        </div>
+
+        <table class="admin-table">
+          <thead><tr><th>ስም</th><th>ስልክ</th><th>ጠቅላላ ግዢ</th><th>ተግባር</th></tr></thead>
+          <tbody id="customer-tbody"></tbody>
+        </table>
+
+        <div id="customer-history-panel" class="admin-form" style="display:none">
+          <h3 id="customer-history-title"></h3>
+          <table class="admin-table">
+            <thead><tr><th>ቀን</th><th>ንጥሎች</th><th>ድምር</th></tr></thead>
+            <tbody id="customer-history-tbody"></tbody>
+          </table>
+          <button type="button" id="close-history-btn" class="btn btn-outline btn-sm">ዝጋ</button>
+        </div>
+      </div>
+
+      <!-- ---------------- PURCHASING (owner only) ---------------- -->
+      <div id="tab-purchasing" class="erp-tab" style="display:none">
+        <h2 style="margin:0 0 20px">ግዢ</h2>
+
+        <div class="admin-section-h">
+          <h3 style="margin:0">አቅራቢዎች</h3>
+          <button id="add-supplier-btn" class="btn btn-outline btn-sm">አቅራቢ ጨምር</button>
+        </div>
+        <div id="supplier-form-panel" class="admin-form" style="display:none">
+          <form id="supplier-form">
+            <div class="grid2">
+              <div class="field"><label>ስም</label><input name="name" required></div>
+              <div class="field"><label>ስልክ</label><input name="phone"></div>
+            </div>
+            <div class="field"><label>አድራሻ (አማራጭ)</label><input name="address"></div>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">አስቀምጥ</button>
+              <button type="button" id="cancel-supplier-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+        <table class="admin-table" style="margin-bottom:40px">
+          <thead><tr><th>ስም</th><th>ስልክ</th><th>አድራሻ</th><th>ተግባር</th></tr></thead>
+          <tbody id="supplier-tbody"></tbody>
+        </table>
+
+        <div class="admin-section-h">
+          <h3 style="margin:0">የግዢ ትዕዛዞች</h3>
+          <button id="add-po-btn" class="btn btn-primary btn-sm">አዲስ ግዢ ትዕዛዝ</button>
+        </div>
+        <div id="po-form-panel" class="admin-form" style="display:none">
+          <p class="note-box">ንጥሎች መጀመሪያ በ«ክምችት» ክፍል ውስጥ መመዝገብ አለባቸው።</p>
+          <form id="po-form">
+            <div class="field"><label>አቅራቢ</label><select id="po-supplier" name="supplierId" required></select></div>
+            <div id="po-lines"></div>
+            <button type="button" id="add-po-line-btn" class="btn btn-outline btn-sm" style="margin-bottom:16px">+ ንጥል አክል</button>
+            <div class="field"><label>ማስታወሻ (አማራጭ)</label><input name="notes"></div>
+            <p style="font-weight:700;font-size:1.1rem" id="po-total-display">ጠቅላላ ድምር: 0</p>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">እንደ «በመጠባበቅ ላይ» አስቀምጥ</button>
+              <button type="button" id="cancel-po-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+        <table class="admin-table">
+          <thead><tr><th>ቀን</th><th>አቅራቢ</th><th>ንጥሎች</th><th>ጠቅላላ ድምር</th><th>ሁኔታ</th><th>ተግባር</th></tr></thead>
+          <tbody id="po-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ---------------- REPORTS (owner only) ---------------- -->
+      <div id="tab-reports" class="erp-tab" style="display:none">
+        <h2 style="margin:0 0 20px">ሪፖርት</h2>
+
+        <div class="admin-form">
+          <h3>የሽያጭ ሪፖርት</h3>
+          <div class="grid2">
+            <div class="field"><label>ከ ቀን</label><input id="report-from" type="date"></div>
+            <div class="field"><label>እስከ ቀን</label><input id="report-to" type="date"></div>
+          </div>
+          <div class="admin-toolbar">
+            <button id="run-sales-report-btn" class="btn btn-primary btn-sm">ሪፖርት አሳይ</button>
+            <button id="export-sales-csv-btn" class="btn btn-outline btn-sm">CSV አውርድ</button>
+            <button id="print-report-btn" class="btn btn-outline btn-sm">አትም</button>
+          </div>
+        </div>
+
+        <div id="sales-report-summary" class="hero-stats-card" style="margin:0 0 24px"></div>
+        <table class="admin-table" style="margin-bottom:40px">
+          <thead><tr><th>ቀን</th><th>ንጥሎች</th><th>ድምር</th><th>ደንበኛ</th><th>የመዘገበው</th></tr></thead>
+          <tbody id="sales-report-tbody"></tbody>
+        </table>
+
+        <div class="admin-section-h">
+          <h3 style="margin:0">የክምችት ዋጋ ሪፖርት</h3>
+          <button id="export-inventory-csv-btn" class="btn btn-outline btn-sm">CSV አውርድ</button>
+        </div>
+        <p id="inventory-value-total" style="font-weight:700;font-size:1.1rem"></p>
+        <table class="admin-table">
+          <thead><tr><th>ስም</th><th>ክምችት</th><th>መለኪያ</th><th>የግዢ ዋጋ</th><th>ጠቅላላ ዋጋ</th></tr></thead>
+          <tbody id="inventory-report-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- ---------------- STAFF (owner only) ---------------- -->
+      <div id="tab-staff" class="erp-tab" style="display:none">
+        <div class="admin-section-h">
+          <h2 style="margin:0">ሰራተኞች</h2>
+          <button id="add-staff-btn" class="btn btn-primary btn-sm">ሰራተኛ ጨምር</button>
+        </div>
+
+        <div id="staff-form-panel" class="admin-form" style="display:none">
+          <h3>አዲስ ሰራተኛ መዝግብ</h3>
+          <p class="note-box">መጀመሪያ ለዚህ ሰው ኢሜይል/የይለፍ ቃል በFirebase Console → Authentication → Add user ይፍጠሩ፣ ከዚያ እዚህ የሚታየውን User UID ይለጥፉ።</p>
+          <form id="staff-form">
+            <div class="field"><label>User UID (ከFirebase Console Users ዝርዝር ይቅዱ)</label><input name="uid" required></div>
+            <div class="field"><label>ስም</label><input name="name" required></div>
+            <div class="field"><label>ደረጃ</label>
+              <select name="role">
+                <option value="staff">ሰራተኛ</option>
+                <option value="owner">ባለቤት</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button type="submit" class="btn btn-primary">አስቀምጥ</button>
+              <button type="button" id="cancel-staff-btn" class="btn btn-outline">ይቅር</button>
+            </div>
+          </form>
+        </div>
+
+        <table class="admin-table">
+          <thead><tr><th>ስም</th><th>ደረጃ</th><th>ሁኔታ</th><th>ተግባር</th></tr></thead>
+          <tbody id="staff-tbody"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="erp.js"></script>
+<script>
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>

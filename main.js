@@ -10,7 +10,6 @@ var CATEGORIES_CACHE = [];
 var TESTIMONIALS_CACHE = [];
 var SOCIAL_CACHE = {};
 var CONTENT_CACHE = {};
-var ADVISOR_CACHE = { crops:[], concerns:[], soils:[] };
 
 document.addEventListener("DOMContentLoaded", async () => {
   applyI18n();
@@ -24,23 +23,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderAboutContent();
   initAdvisor();
   renderCategoryGrid();
-  renderGallery();
   initProductGrids();
   initModal();
   initContactForm();
   renderSocialIcons();
+  renderTestimonials();
 });
 
 async function loadSiteData(){
-  const [products, categories, testimonials, social, content, advisor] = await Promise.all([
-    fetchProducts(), fetchCategories(), fetchTestimonials(), fetchSocialLinks(), fetchContent(), fetchAdvisorOptions()
+  const [products, categories, testimonials, social, content] = await Promise.all([
+    fetchProducts(), fetchCategories(), fetchTestimonials(), fetchSocialLinks(), fetchContent()
   ]);
   PRODUCTS_CACHE = products;
   CATEGORIES_CACHE = categories;
   TESTIMONIALS_CACHE = testimonials;
   SOCIAL_CACHE = social;
   CONTENT_CACHE = content;
-  ADVISOR_CACHE = advisor;
 }
 
 /* ---------- translations (static interface chrome) ---------- */
@@ -165,29 +163,22 @@ function initCounters(){
   });
 }
 
-/* ---------- crop & soil advisor (home page) — fully admin-editable ---------- */
-function advisorLabel(item, lang){
-  return (item.label && (item.label[lang] || item.label.en)) || "";
-}
-function renderAdvisorSelects(){
-  const lang = getLang();
-  const cropSel = document.getElementById("adv-crop");
-  const concernSel = document.getElementById("adv-concern");
-  const soilSel = document.getElementById("adv-soil");
-  if(cropSel) cropSel.innerHTML = ADVISOR_CACHE.crops.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
-  if(concernSel) concernSel.innerHTML = ADVISOR_CACHE.concerns.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
-  if(soilSel) soilSel.innerHTML = ADVISOR_CACHE.soils.map(c => `<option value="${c.id}">${advisorLabel(c,lang)}</option>`).join("");
-}
+/* ---------- crop & soil advisor (home page) ---------- */
+const ADVISOR_MAP = {
+  weeds: "herbicide",
+  insects: "pesticide",
+  fungal: "fungicide",
+  fertility: "fertilizer",
+  seedborne: "seed"
+};
 function initAdvisor(){
   const form = document.getElementById("advisor-form");
   if(!form) return;
-  renderAdvisorSelects();
   const result = document.getElementById("advisor-result");
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const concernId = form.concern.value;
-    const concern = ADVISOR_CACHE.concerns.find(c => c.id === concernId);
-    const catId = (concern && concern.categoryId) || (CATEGORIES_CACHE[0] && CATEGORIES_CACHE[0].id);
+    const concern = form.concern.value;
+    const catId = ADVISOR_MAP[concern] || "fertilizer";
     const cat = getCategory(catId);
     const lang = getLang();
     result.classList.remove("empty");
@@ -197,23 +188,6 @@ function initAdvisor(){
       <a class="btn btn-primary btn-sm" href="products.html?cat=${catId}">${t("strip_view")}</a>
     `;
   });
-}
-
-/* ---------- homepage gallery (admin-editable, hides empty slots) ---------- */
-function renderGallery(){
-  const grid = document.querySelector(".gallery-grid");
-  const section = document.getElementById("gallery-section");
-  if(!grid) return;
-  const photos = (CONTENT_CACHE.gallery || []).filter(x => x && x.trim());
-  if(!photos.length){ if(section) section.style.display = "none"; return; }
-  if(section) section.style.display = "";
-  grid.innerHTML = photos.map(src => `
-    <div>
-      <div class="img-slot">
-        <img src="${src}" alt="">
-      </div>
-    </div>
-  `).join("");
 }
 
 /* ---------- category grid (homepage) ---------- */
@@ -335,29 +309,6 @@ function initModal(){
   backdrop.querySelector(".modal-close")?.addEventListener("click", closeProductModal);
   document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeProductModal(); });
 }
-function productTestimonialsHTML(productId){
-  const lang = getLang();
-  const items = TESTIMONIALS_CACHE.filter(x => x.productId === productId);
-  if(!items.length) return "";
-  const cards = items.map(x => {
-    const media = x.mediaType === "video"
-      ? `<video src="${x.filename}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
-      : `<img src="${x.filename}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
-    const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
-    return `
-      <div class="testimonial-card">
-        <div class="img-slot testimonial-media">
-          ${x.filename ? media : ""}
-          <div class="img-slot-hint"><b>${x.filename || ""}</b></div>
-        </div>
-        <p class="testimonial-quote">"${quote}"</p>
-        <p class="testimonial-name">— ${x.name || ""}</p>
-      </div>
-    `;
-  }).join("");
-  return `<div class="modal-section"><h4>${t("pp_testimonials")}</h4><div class="testimonial-grid">${cards}</div></div>`;
-}
-
 function openProductModal(p){
   const backdrop = document.getElementById("product-modal");
   if(!backdrop || !p) return;
@@ -372,7 +323,6 @@ function openProductModal(p){
     <div class="modal-section"><h4>${t("pp_material")}</h4><p>${productField(p,"material",lang)}</p></div>
     <div class="modal-section"><h4>${t("pp_usage")}</h4><p>${productField(p,"usage",lang)}</p></div>
     <div class="modal-section"><h4>${t("pp_pack")}</h4><p>${productField(p,"pack",lang)}</p></div>
-    ${productTestimonialsHTML(p.id)}
     <div class="modal-section">
       <a class="btn btn-primary" href="contact.html?product=${encodeURIComponent(productField(p,"name","en"))}">${t("pp_inquire")}</a>
     </div>
@@ -406,6 +356,33 @@ function renderSocialIcons(){
     .join("");
   wrap.innerHTML = html;
   wrap.style.display = html ? "flex" : "none";
+}
+
+/* ---------- farmer stories (homepage) ---------- */
+function renderTestimonials(){
+  const wrap = document.getElementById("testimonials-grid");
+  const section = document.getElementById("testimonials-section");
+  if(!wrap) return;
+  const items = TESTIMONIALS_CACHE;
+  if(!items.length){ if(section) section.style.display = "none"; return; }
+  if(section) section.style.display = "";
+  const lang = getLang();
+  wrap.innerHTML = items.map(x => {
+    const media = x.mediaType === "video"
+      ? `<video src="${x.filename}" controls playsinline onerror="this.parentElement.classList.add('img-missing')"></video>`
+      : `<img src="${x.filename}" alt="" onerror="this.parentElement.classList.add('img-missing')">`;
+    const quote = (x.quote && (x.quote[lang] || x.quote.en)) || "";
+    return `
+      <div class="testimonial-card">
+        <div class="img-slot testimonial-media">
+          ${x.filename ? media : ""}
+          <div class="img-slot-hint"><b>${x.filename || ""}</b></div>
+        </div>
+        <p class="testimonial-quote">"${quote}"</p>
+        <p class="testimonial-name">— ${x.name || ""}</p>
+      </div>
+    `;
+  }).join("");
 }
 
 /* ---------- contact form (mailto fallback — no backend needed for messages) ---------- */

@@ -19,7 +19,12 @@ const DEFAULT_CONTENT = {
   contact: {
     phone: "+251 9xx xxx xxx",
     email: "info@eastchem.example",
-    address: { en:"Add your office address here", am:"የቢሮዎን አድራሻ እዚህ ያክሉ", om:"Teessoo waajjira keessanii asitti dabalaa", ti:"ኣድራሻ ቤት ጽሕፈትካ ኣብዚ ወስኽ" },
+    address: {
+      en:"Bole Medhaniyalem, Next to Abyssinia Building, Impress Hotel 1st Floor, Office No. 104, Addis Ababa, Ethiopia",
+      am:"ቦሌ መድኀኒዓለም፣ ከአቢሲንያ ህንፃ አጠገብ፣ ኢምፕሬስ ሆቴል 1ኛ ፎቅ፣ ቢሮ ቁ. 104፣ አዲስ አበባ፣ ኢትዮጵያ",
+      om:"Bole Medhaniyalem, Dhaabbata Abyssinia cinatti, Impress Hotel Dar. 1ffaa, Kutaa Waajjiraa Lak. 104, Finfinnee, Itoophiyaa",
+      ti:"ቦሌ መድኃኔዓለም፣ ጥቓ ህንጻ ኣቢስንያ፣ ኢምፕረስ ሆቴል 1ይ ደርቢ፣ ቤት ጽሕፈት ቁ. 104፣ ኣዲስ ኣበባ፣ ኢትዮጵያ"
+    },
     hours: { en:"Monday – Saturday, 8:00 – 17:00", am:"ሰኞ – ቅዳሜ፣ 8:00 – 17:00", om:"Wiixata – Sanbata, 8:00 – 17:00", ti:"ሶኑይ – ቀዳም፣ 8:00 – 17:00" }
   },
   about: {
@@ -39,57 +44,8 @@ const DEFAULT_CONTENT = {
       { title: { en:"Straight talk", am:"ቀጥተኛ ንግግር", om:"Haasaa Qajeelaa", ti:"ቀጥታዊ ዘተ" }, text: { en:"We explain trade-offs plainly, in the language you're comfortable in.", am:"ግልጽ ልዩነቶችን በሚመችዎት ቋንቋ እናስረዳለን።", om:"Filannoowwan ifatti, afaan isin itti mijataniin ibsina.", ti:"ፍልልያት ብንጹር፣ ብእትፈትዎ ቋንቋ ንገልጽ።" } },
       { title: { en:"Reliability", am:"አስተማማኝነት", om:"Amanamummaa", ti:"ኣስተማማንነት" }, text: { en:"Stock that's there when planting season needs it to be.", am:"የመዝሪያ ወቅት ሲደርስ ያለ ክምችት።", om:"Kuusaan yeroo facaasaa isin barbaachisu jira.", ti:"ወቕቲ ዘርኢ ኣብ ዘድልየሉ እዋን ዝርከብ ክምችት።" } }
     ]
-  },
-  gallery: ["", "", ""]
+  }
 };
-
-/* =========================================================
-   EAST CHEM PLC — homepage crop/soil advisor
-   Stored in Firestore doc settings/advisor. Fully editable from
-   the admin panel (add/remove options, 4 languages each); each
-   "concern" maps to the category it should recommend.
-   ========================================================= */
-const DEFAULT_ADVISOR = {
-  crops: [
-    { id:"teff", label:{ en:"Teff", am:"ጤፍ", om:"Xaafii", ti:"ጣፍ" } },
-    { id:"maize", label:{ en:"Maize", am:"በቆሎ", om:"Boqqolloo", ti:"ዕፉን" } },
-    { id:"wheat", label:{ en:"Wheat", am:"ስንዴ", om:"Qamadii", ti:"ስርናይ" } },
-    { id:"barley", label:{ en:"Barley", am:"ገብስ", om:"Garbuu", ti:"ገብስ" } },
-    { id:"sorghum", label:{ en:"Sorghum", am:"ማሽላ", om:"Sorgamaa", ti:"ማሽላ" } },
-    { id:"vegetables", label:{ en:"Vegetables", am:"አትክልት", om:"Biqiltuu", ti:"ኣሕምልቲ" } }
-  ],
-  concerns: [
-    { id:"weeds", categoryId:"herbicide", label:{ en:"Weeds taking over the field", am:"እርሻውን አረም ሲወርሰው", om:"Margi lafa qonnaa haguugee", ti:"ኣረም ግራት ምስ ዝዕብልል" } },
-    { id:"insects", categoryId:"pesticide", label:{ en:"Insects or pests on the crop", am:"በሰብሉ ላይ ተባይ ወይም ነፍሳት ሲኖር", om:"Ilbiisni ykn summiin midhaan irra jira", ti:"ኣብ ኣዝመራ ተመን ምስ ዝርአ" } },
-    { id:"fungal", categoryId:"fungicide", label:{ en:"Leaf spots or fungal disease", am:"የቅጠል ነጠብጣብ ወይም የፈንገስ በሽታ", om:"Tuqaa baalaa ykn dhukkuba fangasii", ti:"ናይ ቆጵላ ነጠብጣብ ወይ ሕማም ፈንገስ" } },
-    { id:"fertility", categoryId:"fertilizer", label:{ en:"Low soil fertility / poor growth", am:"ዝቅተኛ የአፈር ለምነት / ደካማ እድገት", om:"Xamsii biyyee gadi bu'aa / guddina dadhabaa", ti:"ትሑት ልምዲ ዓፈር / ድኹም ዕቤት" } },
-    { id:"seedborne", categoryId:"seed", label:{ en:"Protecting seed before sowing", am:"ከመዝራት በፊት ዘርን መጠበቅ", om:"Sanyii dura osoo hin facaasin ittisuu", ti:"ቅድሚ ምዝራእ ዘርኢ ምክልኻል" } }
-  ],
-  soils: [
-    { id:"unsure", label:{ en:"Not sure", am:"እርግጠኛ አይደለሁም", om:"Hin beeku", ti:"ርግጸኛ ኣይኮንኩን" } },
-    { id:"sandy", label:{ en:"Sandy, drains fast", am:"አሸዋማ፣ ውሃ በፍጥነት የሚያሳልፍ", om:"Cirracha, dafee bishaan baasu", ti:"ሑጻዊ፣ ቀልጢፉ ማይ ዘሕልፍ" } },
-    { id:"clay", label:{ en:"Heavy / clay soil", am:"ከባድ / ሸክላማ አፈር", om:"Biyyee ulfaataa / dhoqqee", ti:"ከቢድ / ጭቃዊ ዓፈር" } },
-    { id:"loamy", label:{ en:"Balanced / loamy", am:"ሚዛናዊ አፈር", om:"Madaalaawaa", ti:"ማዕረ ዓፈር" } }
-  ]
-};
-
-async function fetchAdvisorOptions(){
-  if(!FIREBASE_READY) return DEFAULT_ADVISOR;
-  try{
-    const doc = await db.collection("settings").doc("advisor").get();
-    if(!doc.exists) return DEFAULT_ADVISOR;
-    const data = doc.data();
-    return {
-      crops: data.crops && data.crops.length ? data.crops : DEFAULT_ADVISOR.crops,
-      concerns: data.concerns && data.concerns.length ? data.concerns : DEFAULT_ADVISOR.concerns,
-      soils: data.soils && data.soils.length ? data.soils : DEFAULT_ADVISOR.soils
-    };
-  }catch(e){ console.error(e); return DEFAULT_ADVISOR; }
-}
-async function writeAdvisorOptions(advisor){
-  if(!FIREBASE_READY) throw new Error("Firebase isn't configured yet — see README.");
-  await db.collection("settings").doc("advisor").set(advisor);
-}
 
 /* ---------- Firestore-backed read/write (falls back to DEFAULT_CONTENT) ---------- */
 async function fetchContent(){
@@ -103,8 +59,7 @@ async function fetchContent(){
       hero: { ...DEFAULT_CONTENT.hero, ...(data.hero||{}) },
       stats: data.stats || DEFAULT_CONTENT.stats,
       contact: { ...DEFAULT_CONTENT.contact, ...(data.contact||{}) },
-      about: { ...DEFAULT_CONTENT.about, ...(data.about||{}) },
-      gallery: data.gallery || DEFAULT_CONTENT.gallery
+      about: { ...DEFAULT_CONTENT.about, ...(data.about||{}) }
     };
   }catch(e){ console.error(e); return DEFAULT_CONTENT; }
 }

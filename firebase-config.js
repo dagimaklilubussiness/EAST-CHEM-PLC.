@@ -8,12 +8,12 @@
    ========================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA1PzhfEDcltCP9DLWlBKh5W3VscREw74A",
-  authDomain: "east-chem.firebaseapp.com",
-  projectId: "east-chem",
-  storageBucket: "east-chem.firebasestorage.app",
-  messagingSenderId: "991599187223",
-  appId: "1:991599187223:web:67e9b1dbe1819ddc2dd352"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 const FIREBASE_READY = firebaseConfig.apiKey !== "YOUR_API_KEY";

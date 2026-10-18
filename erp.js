@@ -25,6 +25,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initHandlers();
 });
 
+
+function friendlyError(err){
+  const m = (err && err.message) || String(err);
+  if(err && err.code === "permission-denied" || /insufficient permissions/i.test(m))
+    return "Permission denied. Make sure your staff record has role \"owner\" and active = true, and that the Firestore rules are published.";
+  return m;
+}
+
 /* ---------- auth + role gate ---------- */
 function initGate(){
   const gate = document.getElementById("erp-gate");
@@ -64,7 +72,8 @@ function initGate(){
       gate.style.display = "none";
       wrap.classList.add("open");
       logoutBtn.style.display = "inline-flex";
-      await boot();
+      try{ await boot(); }
+      catch(err){ console.error(err); alert(friendlyError(err)); }
     }catch(err){
       noAccess.hidden = false;
       gate.style.display = "block";
@@ -122,13 +131,13 @@ async function boot(){
 function renderTabs(){
   const wrap = document.getElementById("erp-tabs");
   const tabs = [
-    { id:"dashboard", label:"ዳሽቦርድ", ownerOnly:true },
-    { id:"inventory", label:"ክምችት" },
-    { id:"purchasing", label:"ግዢ", ownerOnly:true },
-    { id:"sales", label:"ሽያጭ" },
-    { id:"customers", label:"ደንበኞች" },
-    { id:"reports", label:"ሪፖርት", ownerOnly:true },
-    { id:"staff", label:"ሰራተኞች", ownerOnly:true }
+    { id:"dashboard", label:"Dashboard", ownerOnly:true },
+    { id:"inventory", label:"Inventory" },
+    { id:"purchasing", label:"Purchasing", ownerOnly:true },
+    { id:"sales", label:"Sales" },
+    { id:"customers", label:"Customers" },
+    { id:"reports", label:"Reports", ownerOnly:true },
+    { id:"staff", label:"Staff", ownerOnly:true }
   ].filter(t => !t.ownerOnly || CURRENT_ROLE === "owner");
 
   wrap.innerHTML = tabs.map((t,i) => `<button class="filter-chip${i===0?' active':''}" data-tab="${t.id}">${t.label}</button>`).join("");
@@ -179,7 +188,7 @@ function renderInventoryTable(){
     const low = it.stockQty <= (it.lowStockThreshold || 0);
     const costCell = CURRENT_ROLE === "owner" ? `<td>${it.costPrice != null ? it.costPrice : "-"}</td>` : "";
     const actions = CURRENT_ROLE === "owner"
-      ? `<button class="btn btn-outline btn-sm" data-edit-item="${it.id}">አርትዕ</button> <button class="btn btn-danger btn-sm" data-del-item="${it.id}">አጥፋ</button>`
+      ? `<button class="btn btn-outline btn-sm" data-edit-item="${it.id}">Edit</button> <button class="btn btn-danger btn-sm" data-del-item="${it.id}">Delete</button>`
       : "";
     return `<tr${low ? ' style="background:#FBE3DC"' : ''}>
       <td>${it.name}${low ? ' ⚠️' : ''}</td>
@@ -199,22 +208,29 @@ function openItemForm(item){
   editingItemId = item ? item.id : null;
   const form = document.getElementById("item-form");
   form.reset();
-  document.getElementById("item-form-title").textContent = item ? "ንጥል አርትዕ" : "አዲስ ንጥል";
+  document.getElementById("item-form-title").textContent = item ? "Edit Item" : "New Item";
   document.getElementById("stock-qty-field").style.display = item ? "none" : "block";
   document.getElementById("stock-qty-note").style.display = item ? "block" : "none";
   form.querySelector('[name="stockQty"]').required = !item;
   if(item){
-    form.name.value = item.name || "";
+    form.elements.name.value = item.name || "";
     form.unit.value = item.unit || "";
     form.lowStockThreshold.value = item.lowStockThreshold != null ? item.lowStockThreshold : 5;
     form.costPrice.value = item.costPrice != null ? item.costPrice : "";
   }
   document.getElementById("item-form-panel").style.display = "block";
   document.getElementById("item-form-panel").scrollIntoView({ behavior: "smooth" });
+  form.elements.name.focus();
 }
 
 function populateAdjustSelect(){
   const sel = document.getElementById("adjust-item");
+  if(!INVENTORY_CACHE.length){
+    sel.innerHTML = '<option value="">No items yet. Click "Add New Item" first.</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
   sel.innerHTML = INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("");
 }
 
@@ -226,9 +242,9 @@ async function refreshInventory(){
 }
 
 async function deleteItem(id){
-  if(!confirm("ይህን ንጥል ማጥፋት ይፈልጋሉ?")) return;
+  if(!confirm("Delete this item?")) return;
   try{ await db.collection("inventory").doc(id).delete(); await refreshInventory(); }
-  catch(err){ alert(err.message); }
+  catch(err){ alert(friendlyError(err)); }
 }
 
 /* =====================================================================
@@ -241,17 +257,17 @@ function addSaleLine(){
   div.setAttribute("data-line", "1");
   div.innerHTML = `
     <div class="field">
-      <label>ንጥል</label>
+      <label>Item</label>
       <select class="line-item" required>
-        <option value="">-- ይምረጡ --</option>
+        <option value="">-- Select --</option>
         ${INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("")}
       </select>
     </div>
     <div class="field">
-      <label>ብዛት እና ዋጋ</label>
+      <label>Quantity and price</label>
       <div style="display:flex;gap:8px">
-        <input type="number" step="any" class="line-qty" placeholder="ብዛት" required style="width:50%">
-        <input type="number" step="any" class="line-price" placeholder="ዋጋ" required style="width:50%">
+        <input type="number" step="any" class="line-qty" placeholder="Qty" required style="width:50%">
+        <input type="number" step="any" class="line-price" placeholder="Price" required style="width:50%">
       </div>
     </div>
   `;
@@ -266,14 +282,14 @@ function updateSaleTotal(){
     const price = parseFloat(div.querySelector(".line-price").value) || 0;
     total += qty * price;
   });
-  document.getElementById("sale-total-display").textContent = "ጠቅላላ ድምር: " + total.toLocaleString();
+  document.getElementById("sale-total-display").textContent = "Total: " + total.toLocaleString();
 }
 
 function renderSalesTable(){
   const tbody = document.getElementById("sales-tbody");
   tbody.innerHTML = SALES_CACHE.map(s => {
-    const itemsSummary = (s.items || []).map(it => `${it.name} ×${it.qty}`).join("፣ ");
-    const delBtn = CURRENT_ROLE === "owner" ? `<button class="btn btn-danger btn-sm" data-del-sale="${s.id}">አጥፋ</button>` : "";
+    const itemsSummary = (s.items || []).map(it => `${it.name} ×${it.qty}`).join(", ");
+    const delBtn = CURRENT_ROLE === "owner" ? `<button class="btn btn-danger btn-sm" data-del-sale="${s.id}">Delete</button>` : "";
     return `<tr>
       <td>${s.date || ""}</td>
       <td>${itemsSummary}</td>
@@ -299,7 +315,7 @@ async function refreshAfterSale(){
 }
 
 async function deleteSale(id){
-  if(!confirm("ይህን ሽያጭ ማጥፋት ይፈልጋሉ? ክምችቱም ይመለሳል።")) return;
+  if(!confirm("Delete this sale? The stock will be restored.")) return;
   try{
     await db.runTransaction(async tx => {
       const saleRef = db.collection("sales").doc(id);
@@ -318,7 +334,7 @@ async function deleteSale(id){
       tx.delete(saleRef);
     });
     await refreshAfterSale();
-  }catch(err){ alert(err.message); }
+  }catch(err){ alert(friendlyError(err)); }
 }
 
 /* =====================================================================
@@ -343,10 +359,10 @@ function renderDashboard(){
   });
 
   document.getElementById("dash-stats").innerHTML = `
-    <div class="stat"><b>${monthSales.length}</b><span>የዚህ ወር ሽያጭ ብዛት</span></div>
-    <div class="stat"><b>${revenue.toLocaleString()}</b><span>የዚህ ወር ገቢ</span></div>
-    <div class="stat"><b>${profit.toLocaleString()}</b><span>የዚህ ወር ግምታዊ ትርፍ</span></div>
-    <div class="stat"><b>${lowItems.length}</b><span>ዝቅተኛ ክምችት ያላቸው ንጥሎች</span></div>
+    <div class="stat"><b>${monthSales.length}</b><span>Sales this month</span></div>
+    <div class="stat"><b>${revenue.toLocaleString()}</b><span>Revenue this month</span></div>
+    <div class="stat"><b>${profit.toLocaleString()}</b><span>Estimated profit this month</span></div>
+    <div class="stat"><b>${lowItems.length}</b><span>Low-stock items</span></div>
   `;
 
   // top customers, all-time, by total spend
@@ -356,7 +372,7 @@ function renderDashboard(){
   });
   const topCustomers = Object.entries(customerTotals)
     .sort((a,b) => b[1] - a[1]).slice(0,5)
-    .map(([id,total]) => ({ name: (CUSTOMERS_CACHE.find(c => c.id === id) || {}).name || "ያልታወቀ ደንበኛ", total }));
+    .map(([id,total]) => ({ name: (CUSTOMERS_CACHE.find(c => c.id === id) || {}).name || "Unknown customer", total }));
 
   // top products, all-time, by quantity sold
   const productTotals = {};
@@ -370,15 +386,15 @@ function renderDashboard(){
   const topProducts = Object.values(productTotals).sort((a,b) => b.qty - a.qty).slice(0,5);
 
   document.getElementById("dash-top-customers").innerHTML = topCustomers.length
-    ? `<h3>ከፍተኛ ገዢ ደንበኞች</h3><ol>${topCustomers.map(c => `<li>${c.name} — ${c.total.toLocaleString()}</li>`).join("")}</ol>`
-    : `<h3>ከፍተኛ ገዢ ደንበኞች</h3><p class="note-box">ገና በቂ ሽያጭ ከደንበኛ ጋር የተመዘገበ የለም።</p>`;
+    ? `<h3>Top customers</h3><ol>${topCustomers.map(c => `<li>${c.name} — ${c.total.toLocaleString()}</li>`).join("")}</ol>`
+    : `<h3>Top customers</h3><p class="note-box">No sales with customers recorded yet.</p>`;
 
   document.getElementById("dash-top-products").innerHTML = topProducts.length
-    ? `<h3>ከፍተኛ ሽያጭ ያላቸው ንጥሎች</h3><ol>${topProducts.map(p => `<li>${p.name} — ${p.qty} ተሽጧል (${p.revenue.toLocaleString()})</li>`).join("")}</ol>`
-    : `<h3>ከፍተኛ ሽያጭ ያላቸው ንጥሎች</h3><p class="note-box">ገና ምንም ሽያጭ አልተመዘገበም።</p>`;
+    ? `<h3>Top-selling items</h3><ol>${topProducts.map(p => `<li>${p.name} — ${p.qty} sold (${p.revenue.toLocaleString()})</li>`).join("")}</ol>`
+    : `<h3>Top-selling items</h3><p class="note-box">No sales recorded yet.</p>`;
 
   document.getElementById("dash-lowstock").innerHTML = lowItems.length
-    ? `<h3>ዝቅተኛ ክምችት ማስጠንቀቂያ</h3><ul>${lowItems.map(it => `<li>${it.name} — ${it.stockQty} ${it.unit} ቀርቷል</li>`).join("")}</ul>`
+    ? `<h3>Low stock warning</h3><ul>${lowItems.map(it => `<li>${it.name} — ${it.stockQty} ${it.unit} left</li>`).join("")}</ul>`
     : "";
 }
 
@@ -402,9 +418,9 @@ function renderCustomerTable(){
       <td>${c.phone || "-"}</td>
       <td>${customerTotalSpent(c.id).toLocaleString()}</td>
       <td>
-        <button class="btn btn-outline btn-sm" data-history-customer="${c.id}">ታሪክ</button>
-        <button class="btn btn-outline btn-sm" data-edit-customer="${c.id}">አርትዕ</button>
-        ${delCell ? `<button class="btn btn-danger btn-sm" data-del-customer="${c.id}">አጥፋ</button>` : ""}
+        <button class="btn btn-outline btn-sm" data-history-customer="${c.id}">History</button>
+        <button class="btn btn-outline btn-sm" data-edit-customer="${c.id}">Edit</button>
+        ${delCell ? `<button class="btn btn-danger btn-sm" data-del-customer="${c.id}">Delete</button>` : ""}
       </td>
     </tr>
   `).join("");
@@ -420,7 +436,7 @@ function openCustomerForm(customer){
   const form = document.getElementById("customer-form");
   form.reset();
   if(customer){
-    form.name.value = customer.name || "";
+    form.elements.name.value = customer.name || "";
     form.phone.value = customer.phone || "";
     form.address.value = customer.address || "";
   }
@@ -432,10 +448,10 @@ function showCustomerHistory(customerId){
   const c = CUSTOMERS_CACHE.find(x => x.id === customerId);
   if(!c) return;
   const sales = SALES_CACHE.filter(s => s.customerId === customerId);
-  document.getElementById("customer-history-title").textContent = (c.name || "") + " — የግዢ ታሪክ";
+  document.getElementById("customer-history-title").textContent = (c.name || "") + " — Purchase history";
   document.getElementById("customer-history-tbody").innerHTML = sales.length
-    ? sales.map(s => `<tr><td>${s.date||""}</td><td>${(s.items||[]).map(it=>`${it.name} ×${it.qty}`).join("፣ ")}</td><td>${(s.total||0).toLocaleString()}</td></tr>`).join("")
-    : `<tr><td colspan="3">ምንም የተመዘገበ ግዢ የለም።</td></tr>`;
+    ? sales.map(s => `<tr><td>${s.date||""}</td><td>${(s.items||[]).map(it=>`${it.name} ×${it.qty}`).join(", ")}</td><td>${(s.total||0).toLocaleString()}</td></tr>`).join("")
+    : `<tr><td colspan="3">No purchases recorded.</td></tr>`;
   document.getElementById("customer-history-panel").style.display = "block";
   document.getElementById("customer-history-panel").scrollIntoView({ behavior: "smooth" });
 }
@@ -443,7 +459,7 @@ function showCustomerHistory(customerId){
 function populateSaleCustomerSelect(){
   const sel = document.getElementById("sale-customer-select");
   if(!sel) return;
-  sel.innerHTML = `<option value="">-- ወይም ከታች በነፃ ይጻፉ --</option>` +
+  sel.innerHTML = `<option value="">-- or type freely below --</option>` +
     CUSTOMERS_CACHE.map(c => `<option value="${c.id}">${c.name}${c.phone ? " ("+c.phone+")" : ""}</option>`).join("");
 }
 
@@ -454,9 +470,9 @@ async function refreshCustomers(){
 }
 
 async function deleteCustomer(id){
-  if(!confirm("ይህን ደንበኛ ማጥፋት ይፈልጋሉ?")) return;
+  if(!confirm("Delete this customer?")) return;
   try{ await db.collection("customers").doc(id).delete(); await refreshCustomers(); }
-  catch(err){ alert(err.message); }
+  catch(err){ alert(friendlyError(err)); }
 }
 
 /* =====================================================================
@@ -470,8 +486,8 @@ function renderSupplierTable(){
       <td>${s.phone || "-"}</td>
       <td>${s.address || "-"}</td>
       <td>
-        <button class="btn btn-outline btn-sm" data-edit-supplier="${s.id}">አርትዕ</button>
-        <button class="btn btn-danger btn-sm" data-del-supplier="${s.id}">አጥፋ</button>
+        <button class="btn btn-outline btn-sm" data-edit-supplier="${s.id}">Edit</button>
+        <button class="btn btn-danger btn-sm" data-del-supplier="${s.id}">Delete</button>
       </td>
     </tr>
   `).join("");
@@ -484,7 +500,7 @@ function openSupplierForm(supplier){
   const form = document.getElementById("supplier-form");
   form.reset();
   if(supplier){
-    form.name.value = supplier.name || "";
+    form.elements.name.value = supplier.name || "";
     form.phone.value = supplier.phone || "";
     form.address.value = supplier.address || "";
   }
@@ -500,9 +516,9 @@ async function refreshSuppliers(){
   populateSupplierSelect();
 }
 async function deleteSupplier(id){
-  if(!confirm("ይህን አቅራቢ ማጥፋት ይፈልጋሉ?")) return;
+  if(!confirm("Delete this supplier?")) return;
   try{ await db.collection("suppliers").doc(id).delete(); await refreshSuppliers(); }
-  catch(err){ alert(err.message); }
+  catch(err){ alert(friendlyError(err)); }
 }
 
 function addPOLine(){
@@ -512,17 +528,17 @@ function addPOLine(){
   div.setAttribute("data-po-line", "1");
   div.innerHTML = `
     <div class="field">
-      <label>ንጥል</label>
+      <label>Item</label>
       <select class="po-line-item" required>
-        <option value="">-- ይምረጡ --</option>
+        <option value="">-- Select --</option>
         ${INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("")}
       </select>
     </div>
     <div class="field">
-      <label>ብዛት እና የግዢ ዋጋ</label>
+      <label>Quantity and purchase cost</label>
       <div style="display:flex;gap:8px">
-        <input type="number" step="any" class="po-line-qty" placeholder="ብዛት" required style="width:50%">
-        <input type="number" step="any" class="po-line-cost" placeholder="ዋጋ" required style="width:50%">
+        <input type="number" step="any" class="po-line-qty" placeholder="Qty" required style="width:50%">
+        <input type="number" step="any" class="po-line-cost" placeholder="Price" required style="width:50%">
       </div>
     </div>
   `;
@@ -536,15 +552,15 @@ function updatePOTotal(){
     const cost = parseFloat(div.querySelector(".po-line-cost").value) || 0;
     total += qty * cost;
   });
-  document.getElementById("po-total-display").textContent = "ጠቅላላ ድምር: " + total.toLocaleString();
+  document.getElementById("po-total-display").textContent = "Total: " + total.toLocaleString();
 }
 
 function renderPOTable(){
   const tbody = document.getElementById("po-tbody");
   tbody.innerHTML = PO_CACHE.map(po => {
-    const itemsSummary = (po.items || []).map(it => `${it.name} ×${it.qty}`).join("፣ ");
-    const statusLabel = po.status === "received" ? "ደርሷል ✓" : "በመጠባበቅ ላይ";
-    const receiveBtn = po.status !== "received" ? `<button class="btn btn-primary btn-sm" data-receive-po="${po.id}">ደርሷል ምልክት አድርግ</button>` : "";
+    const itemsSummary = (po.items || []).map(it => `${it.name} ×${it.qty}`).join(", ");
+    const statusLabel = po.status === "received" ? "Received ✓" : "Pending";
+    const receiveBtn = po.status !== "received" ? `<button class="btn btn-primary btn-sm" data-receive-po="${po.id}">Mark as Received</button>` : "";
     return `<tr>
       <td>${(po.createdAt || "").slice(0,10)}</td>
       <td>${po.supplierName || ""}</td>
@@ -571,14 +587,14 @@ async function refreshAfterPO(){
    updates that item's cost as a weighted average of old stock+cost
    and the newly received qty+cost — same idea Kaliber uses. */
 async function receivePO(poId){
-  if(!confirm("ይህ ግዢ ትዕዛዝ ደርሷል? ክምችቱ ራሱ ይጨምራል።")) return;
+  if(!confirm("Mark this purchase order as received? Stock will increase automatically.")) return;
   try{
     await db.runTransaction(async (tx) => {
       const poRef = db.collection("purchaseOrders").doc(poId);
       const poDoc = await tx.get(poRef);
-      if(!poDoc.exists) throw new Error("ትዕዛዙ አልተገኘም።");
+      if(!poDoc.exists) throw new Error("Order not found.");
       const po = poDoc.data();
-      if(po.status === "received") throw new Error("ይህ ትዕዛዝ ቀድሞውኑ ደርሷል ተብሎ ተመዝግቧል።");
+      if(po.status === "received") throw new Error("This order is already marked as received.");
       const items = po.items || [];
       const refs = items.map(it => db.collection("inventory").doc(it.productId));
       const docs = [];
@@ -596,7 +612,7 @@ async function receivePO(poId){
       tx.update(poRef, { status: "received", receivedAt: new Date().toISOString() });
     });
     await refreshAfterPO();
-  }catch(err){ alert(err.message); }
+  }catch(err){ alert(friendlyError(err)); }
 }
 
 /* =====================================================================
@@ -638,14 +654,14 @@ function runSalesReport(){
   }));
 
   document.getElementById("sales-report-summary").innerHTML = `
-    <div class="stat"><b>${sales.length}</b><span>የሽያጮች ብዛት</span></div>
-    <div class="stat"><b>${revenue.toLocaleString()}</b><span>ጠቅላላ ገቢ</span></div>
-    <div class="stat"><b>${profit.toLocaleString()}</b><span>ግምታዊ ትርፍ</span></div>
+    <div class="stat"><b>${sales.length}</b><span>Number of sales</span></div>
+    <div class="stat"><b>${revenue.toLocaleString()}</b><span>Total revenue</span></div>
+    <div class="stat"><b>${profit.toLocaleString()}</b><span>Estimated profit</span></div>
   `;
   document.getElementById("sales-report-tbody").innerHTML = sales.map(s => `
     <tr>
       <td>${s.date || ""}</td>
-      <td>${(s.items || []).map(it => `${it.name} ×${it.qty}`).join("፣ ")}</td>
+      <td>${(s.items || []).map(it => `${it.name} ×${it.qty}`).join(", ")}</td>
       <td>${(s.total || 0).toLocaleString()}</td>
       <td>${s.customerName || "-"}</td>
       <td>${s.recordedByName || ""}</td>
@@ -655,7 +671,7 @@ function runSalesReport(){
 
 function exportSalesCSV(){
   const sales = filteredReportSales();
-  const rows = [["ቀን","ንጥሎች","ድምር","ደንበኛ","የመዘገበው"]];
+  const rows = [["Date","Items","Total","Customer","Recorded by"]];
   sales.forEach(s => rows.push([
     s.date || "",
     (s.items || []).map(it => `${it.name} x${it.qty}`).join("; "),
@@ -668,7 +684,7 @@ function exportSalesCSV(){
 
 function renderInventoryReport(){
   const totalValue = INVENTORY_CACHE.reduce((sum, it) => sum + (it.stockQty || 0) * (it.costPrice || 0), 0);
-  document.getElementById("inventory-value-total").textContent = "ጠቅላላ የክምችት ዋጋ: " + totalValue.toLocaleString();
+  document.getElementById("inventory-value-total").textContent = "Total inventory value: " + totalValue.toLocaleString();
   document.getElementById("inventory-report-tbody").innerHTML = INVENTORY_CACHE.map(it => `
     <tr>
       <td>${it.name}</td>
@@ -681,7 +697,7 @@ function renderInventoryReport(){
 }
 
 function exportInventoryCSV(){
-  const rows = [["ስም","ክምችት","መለኪያ","የግዢ ዋጋ","ጠቅላላ ዋጋ"]];
+  const rows = [["Name","Inventory","Unit","Purchase cost","Total value"]];
   INVENTORY_CACHE.forEach(it => rows.push([
     it.name, it.stockQty, it.unit, it.costPrice != null ? it.costPrice : "", (it.stockQty || 0) * (it.costPrice || 0)
   ]));
@@ -696,9 +712,9 @@ function renderStaffTable(){
   tbody.innerHTML = STAFF_CACHE.map(s => `
     <tr>
       <td>${s.name || ""}</td>
-      <td>${s.role === "owner" ? "ባለቤት" : "ሰራተኛ"}</td>
-      <td>${s.active === false ? "ቦዘነ" : "ንቁ"}</td>
-      <td><button class="btn btn-outline btn-sm" data-toggle-staff="${s.id}">${s.active === false ? "አንቃ" : "አቦዝን"}</button></td>
+      <td>${s.role === "owner" ? "Owner" : "Staff"}</td>
+      <td>${s.active === false ? "Inactive" : "Active"}</td>
+      <td><button class="btn btn-outline btn-sm" data-toggle-staff="${s.id}">${s.active === false ? "Activate" : "Deactivate"}</button></td>
     </tr>
   `).join("");
   tbody.querySelectorAll("[data-toggle-staff]").forEach(b => b.addEventListener("click", () => toggleStaffActive(b.dataset.toggleStaff)));
@@ -711,7 +727,7 @@ async function toggleStaffActive(uid){
     await db.collection("staff").doc(uid).update({ active: s.active === false ? true : false });
     STAFF_CACHE = await loadStaff();
     renderStaffTable();
-  }catch(err){ alert(err.message); }
+  }catch(err){ alert(friendlyError(err)); }
 }
 
 /* ---------- all form/button wiring, registered once ---------- */
@@ -724,7 +740,7 @@ function initHandlers(){
     e.preventDefault();
     const f = e.target;
     const data = {
-      name: f.name.value.trim(),
+      name: f.elements.name.value.trim(),
       unit: f.unit.value.trim(),
       lowStockThreshold: parseFloat(f.lowStockThreshold.value) || 0,
       costPrice: (CURRENT_ROLE === "owner" && f.costPrice.value) ? parseFloat(f.costPrice.value) : null,
@@ -739,7 +755,7 @@ function initHandlers(){
       }
       document.getElementById("item-form-panel").style.display = "none";
       await refreshInventory();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("adjust-form").addEventListener("submit", async (e) => {
@@ -747,21 +763,23 @@ function initHandlers(){
     const f = e.target;
     const itemId = f.itemId.value;
     const delta = parseFloat(f.delta.value);
-    if(!itemId || isNaN(delta)) return;
+    if(!itemId){ alert("Please add an item first."); return; }
+    if(isNaN(delta)) return;
     try{
       await db.runTransaction(async (tx) => {
         const ref = db.collection("inventory").doc(itemId);
         const doc = await tx.get(ref);
-        if(!doc.exists) throw new Error("ንጥሉ አልተገኘም።");
+        if(!doc.exists) throw new Error("Item not found.");
         const newQty = (doc.data().stockQty || 0) + delta;
         tx.update(ref, { stockQty: newQty, updatedAt: new Date().toISOString() });
       });
       f.reset();
       await refreshInventory();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("add-sale-btn").addEventListener("click", () => {
+    if(!INVENTORY_CACHE.length){ alert("Please register an item in the Inventory tab first."); return; }
     document.getElementById("sale-form").reset();
     document.getElementById("sale-lines").innerHTML = "";
     selectedSaleCustomerId = "";
@@ -793,7 +811,7 @@ function initHandlers(){
         items.push({ productId: sel.value, name: opt.textContent, qty, unitPrice: price, lineTotal: qty * price });
       }
     });
-    if(!items.length){ alert("ቢያንስ አንድ ንጥል ይምረጡ።"); return; }
+    if(!items.length){ alert("Select at least one item."); return; }
     const total = items.reduce((s, x) => s + x.lineTotal, 0);
     const sale = {
       date: new Date().toISOString().slice(0,10),
@@ -812,7 +830,7 @@ function initHandlers(){
         const docs = [];
         for(const r of refs) docs.push(await tx.get(r));
         docs.forEach((doc, i) => {
-          if(!doc.exists) throw new Error("ንጥል ያልተገኘ: " + items[i].name);
+          if(!doc.exists) throw new Error("Item not found: " + items[i].name);
           const newQty = (doc.data().stockQty || 0) - items[i].qty;
           tx.update(refs[i], { stockQty: newQty, updatedAt: new Date().toISOString() });
         });
@@ -821,7 +839,7 @@ function initHandlers(){
       });
       document.getElementById("sale-form-panel").style.display = "none";
       await refreshAfterSale();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("add-customer-btn")?.addEventListener("click", () => openCustomerForm(null));
@@ -831,7 +849,7 @@ function initHandlers(){
   document.getElementById("customer-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
-    const data = { name: f.name.value.trim(), phone: f.phone.value.trim(), address: f.address.value.trim() };
+    const data = { name: f.elements.name.value.trim(), phone: f.phone.value.trim(), address: f.address.value.trim() };
     try{
       if(editingCustomerId){
         await db.collection("customers").doc(editingCustomerId).update(data);
@@ -841,7 +859,7 @@ function initHandlers(){
       }
       document.getElementById("customer-form-panel").style.display = "none";
       await refreshCustomers();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
   document.getElementById("customer-search")?.addEventListener("input", renderCustomerTable);
   document.getElementById("close-history-btn")?.addEventListener("click", () => {
@@ -855,7 +873,7 @@ function initHandlers(){
   document.getElementById("supplier-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
-    const data = { name: f.name.value.trim(), phone: f.phone.value.trim(), address: f.address.value.trim() };
+    const data = { name: f.elements.name.value.trim(), phone: f.phone.value.trim(), address: f.address.value.trim() };
     try{
       if(editingSupplierId){
         await db.collection("suppliers").doc(editingSupplierId).update(data);
@@ -864,12 +882,12 @@ function initHandlers(){
       }
       document.getElementById("supplier-form-panel").style.display = "none";
       await refreshSuppliers();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("add-po-btn")?.addEventListener("click", () => {
-    if(!SUPPLIERS_CACHE.length){ alert("መጀመሪያ ቢያንስ አንድ አቅራቢ ይመዝግቡ።"); return; }
-    if(!INVENTORY_CACHE.length){ alert("መጀመሪያ በ«ክምችት» ክፍል ውስጥ ንጥል ይመዝግቡ።"); return; }
+    if(!SUPPLIERS_CACHE.length){ alert("Please register at least one supplier first."); return; }
+    if(!INVENTORY_CACHE.length){ alert("Please register an item in the Inventory tab first."); return; }
     document.getElementById("po-form").reset();
     document.getElementById("po-lines").innerHTML = "";
     addPOLine();
@@ -894,7 +912,7 @@ function initHandlers(){
         items.push({ productId: sel.value, name: opt.textContent, qty, unitCost, lineTotal: qty * unitCost });
       }
     });
-    if(!items.length){ alert("ቢያንስ አንድ ንጥል ይምረጡ።"); return; }
+    if(!items.length){ alert("Select at least one item."); return; }
     const supplierOpt = f.supplierId.selectedOptions[0];
     const total = items.reduce((s, x) => s + x.lineTotal, 0);
     try{
@@ -911,7 +929,7 @@ function initHandlers(){
       document.getElementById("po-form-panel").style.display = "none";
       PO_CACHE = await loadPurchaseOrders();
       renderPOTable();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("run-sales-report-btn")?.addEventListener("click", runSalesReport);
@@ -932,10 +950,10 @@ function initHandlers(){
     const uid = f.uid.value.trim();
     if(!uid) return;
     try{
-      await db.collection("staff").doc(uid).set({ name: f.name.value.trim(), role: f.role.value, active: true });
+      await db.collection("staff").doc(uid).set({ name: f.elements.name.value.trim(), role: f.role.value, active: true });
       document.getElementById("staff-form-panel").style.display = "none";
       STAFF_CACHE = await loadStaff();
       renderStaffTable();
-    }catch(err){ alert(err.message); }
+    }catch(err){ alert(friendlyError(err)); }
   });
 }

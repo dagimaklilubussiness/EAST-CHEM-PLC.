@@ -3,7 +3,7 @@
    no connection. Firestore/Auth/CDN requests always go to the network —
    this never caches your actual business data. */
 
-const CACHE_NAME = "east-chem-erp-v1";
+const CACHE_NAME = "east-chem-erp-v2";
 const SHELL_FILES = [
   "erp.html",
   "style.css",
@@ -38,18 +38,16 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
   if(event.request.method !== "GET" || url.origin !== self.location.origin) return;
 
+  // Network first so updates always show up; cache only as an offline fallback.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const networkFetch = fetch(event.request)
-        .then((response) => {
-          if(response && response.status === 200){
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || networkFetch;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if(response && response.status === 200){
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

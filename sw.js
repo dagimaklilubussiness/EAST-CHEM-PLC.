@@ -3,11 +3,13 @@
    no connection. Firestore/Auth/CDN requests always go to the network —
    this never caches your actual business data. */
 
-const CACHE_NAME = "east-chem-erp-v2";
+const CACHE_NAME = "east-chem-erp-v3";
 const SHELL_FILES = [
   "erp.html",
   "style.css",
   "erp.js",
+  "invoice.js",
+  "analytics.js",
   "firebase-config.js",
   "logo.png",
   "favicon.png",

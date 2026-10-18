@@ -33,6 +33,70 @@ function friendlyError(err){
   return m;
 }
 
+
+function escHtml(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+function localDate(){
+  const n = new Date();
+  return n.getFullYear() + "-" + String(n.getMonth()+1).padStart(2,"0") + "-" + String(n.getDate()).padStart(2,"0");
+}
+function normText(s){ return String(s || "").trim().replace(/\s+/g, " ").toLowerCase(); }
+
+function toast(msg, isErr){
+  const t = document.getElementById("toast");
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.toggle("err", !!isErr);
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+/* Safe delete: the person must type the exact name before the Delete button unlocks */
+function confirmDelete(opts){
+  return new Promise(resolve => {
+    const modal = document.getElementById("confirm-modal");
+    const input = document.getElementById("cm-input");
+    const ok = document.getElementById("cm-ok");
+    const cancel = document.getElementById("cm-cancel");
+    const expected = String(opts.expected || "DELETE").trim();
+    document.getElementById("cm-title").textContent = opts.title || "Confirm delete";
+    document.getElementById("cm-msg").textContent = opts.message || "";
+    document.getElementById("cm-expect").textContent = expected;
+    ok.textContent = opts.okLabel || "Delete";
+    input.value = "";
+    ok.disabled = true;
+    modal.hidden = false;
+    setTimeout(() => input.focus(), 30);
+    const matches = () => normText(input.value) === normText(expected);
+    const done = (v) => {
+      modal.hidden = true;
+      input.oninput = input.onkeydown = ok.onclick = cancel.onclick = modal.onclick = null;
+      resolve(v);
+    };
+    input.oninput = () => { ok.disabled = !matches(); };
+    input.onkeydown = (e) => {
+      if(e.key === "Enter" && matches()) done(true);
+      if(e.key === "Escape") done(false);
+    };
+    ok.onclick = () => { if(matches()) done(true); };
+    cancel.onclick = () => done(false);
+    modal.onclick = (e) => { if(e.target === modal) done(false); };
+  });
+}
+
+function loginError(err){
+  const c = (err && err.code) || "";
+  if(c === "auth/invalid-credential" || c === "auth/wrong-password" || c === "auth/user-not-found" || c === "auth/invalid-login-credentials")
+    return "Wrong email or password, or this account does not exist in Firebase Authentication.";
+  if(c === "auth/operation-not-allowed") return "Email/Password sign-in is not enabled in Firebase (Authentication → Sign-in method).";
+  if(c === "auth/unauthorized-domain") return "This website address is not authorized in Firebase (Authentication → Settings → Authorized domains).";
+  if(c === "auth/too-many-requests") return "Too many attempts. Please wait a few minutes and try again.";
+  if(c === "auth/network-request-failed") return "Network error. Check your internet connection.";
+  return (err && err.message) || String(err);
+}
+
 /* ---------- auth + role gate ---------- */
 function initGate(){
   const gate = document.getElementById("erp-gate");
@@ -49,16 +113,17 @@ function initGate(){
   }
 
   auth.onAuthStateChanged(async user => {
-    noAccess.hidden = true;
     if(!user){
       gate.style.display = "block";
       wrap.classList.remove("open");
       logoutBtn.style.display = "none";
+      document.getElementById("erp-user").textContent = "";
       return;
     }
     try{
       const doc = await db.collection("staff").doc(user.uid).get();
       if(!doc.exists || doc.data().active === false){
+        noAccess.textContent = "Signed in as " + user.email + ", but no active staff record was found for this account. User UID: " + user.uid;
         noAccess.hidden = false;
         gate.style.display = "block";
         wrap.classList.remove("open");
@@ -66,15 +131,19 @@ function initGate(){
         auth.signOut();
         return;
       }
+      noAccess.hidden = true;
       CURRENT_UID = user.uid;
-      CURRENT_ROLE = doc.data().role || "staff";
+      CURRENT_ROLE = String(doc.data().role || "staff").trim().toLowerCase();
       CURRENT_NAME = doc.data().name || user.email;
+      document.getElementById("erp-user").textContent = CURRENT_NAME + " · " + (CURRENT_ROLE === "owner" ? "Owner" : "Staff");
       gate.style.display = "none";
       wrap.classList.add("open");
       logoutBtn.style.display = "inline-flex";
       try{ await boot(); }
       catch(err){ console.error(err); alert(friendlyError(err)); }
     }catch(err){
+      console.error(err);
+      noAccess.textContent = friendlyError(err);
       noAccess.hidden = false;
       gate.style.display = "block";
     }
@@ -84,8 +153,9 @@ function initGate(){
     e.preventDefault();
     const errEl = document.getElementById("gate-error");
     errEl.hidden = true;
+    noAccess.hidden = true;
     auth.signInWithEmailAndPassword(form.email.value.trim(), form.password.value)
-      .catch(err => { errEl.hidden = false; errEl.textContent = err.message; });
+      .catch(err => { errEl.hidden = false; errEl.textContent = loginError(err); });
   });
 
   logoutBtn.addEventListener("click", () => auth.signOut());
@@ -109,6 +179,8 @@ async function boot(){
   document.getElementById("cost-col-h").style.display = CURRENT_ROLE === "owner" ? "" : "none";
   document.getElementById("cost-price-field").style.display = CURRENT_ROLE === "owner" ? "" : "none";
 
+  document.getElementById("sales-view-switch").style.display = CURRENT_ROLE === "owner" ? "flex" : "none";
+  showSalesView("list");
   renderInventoryTable();
   populateAdjustSelect();
   renderSalesTable();
@@ -121,8 +193,8 @@ async function boot(){
     populateSupplierSelect();
     renderPOTable();
     const now = new Date();
-    document.getElementById("report-from").value = now.toISOString().slice(0,8) + "01";
-    document.getElementById("report-to").value = now.toISOString().slice(0,10);
+    document.getElementById("report-from").value = localDate().slice(0,8) + "01";
+    document.getElementById("report-to").value = localDate();
     runSalesReport();
     renderInventoryReport();
   }
@@ -159,7 +231,7 @@ async function loadInventory(){
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 async function loadSales(){
-  const snap = await db.collection("sales").orderBy("createdAt", "desc").limit(100).get();
+  const snap = await db.collection("sales").orderBy("createdAt", "desc").limit(1000).get();
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 async function loadStaff(){
@@ -191,9 +263,9 @@ function renderInventoryTable(){
       ? `<button class="btn btn-outline btn-sm" data-edit-item="${it.id}">Edit</button> <button class="btn btn-danger btn-sm" data-del-item="${it.id}">Delete</button>`
       : "";
     return `<tr${low ? ' style="background:#FBE3DC"' : ''}>
-      <td>${it.name}${low ? ' ⚠️' : ''}</td>
+      <td>${escHtml(it.name)}${low ? ' ⚠️' : ''}</td>
       <td>${it.stockQty}</td>
-      <td>${it.unit}</td>
+      <td>${escHtml(it.unit)}</td>
       ${costCell}
       <td>${actions}</td>
     </tr>`;
@@ -223,15 +295,31 @@ function openItemForm(item){
   form.elements.name.focus();
 }
 
+function itemOptionsHTML(){
+  return '<option value="">-- Select --</option>' +
+    INVENTORY_CACHE.map(it => `<option value="${it.id}">${escHtml(it.name)} (${it.stockQty} ${escHtml(it.unit)})</option>`).join("");
+}
+
+/* Keeps every open dropdown (sale lines, purchase-order lines) in sync with the latest stock */
+function refreshLineSelects(){
+  document.querySelectorAll("#sale-lines .line-item, #po-lines .po-line-item").forEach(sel => {
+    const v = sel.value;
+    sel.innerHTML = itemOptionsHTML();
+    if(INVENTORY_CACHE.some(x => x.id === v)) sel.value = v;
+  });
+  document.querySelectorAll("#sale-lines [data-line]").forEach(updateLineSub);
+}
+
 function populateAdjustSelect(){
   const sel = document.getElementById("adjust-item");
   if(!INVENTORY_CACHE.length){
     sel.innerHTML = '<option value="">No items yet. Click "Add New Item" first.</option>';
     sel.disabled = true;
-    return;
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = INVENTORY_CACHE.map(it => `<option value="${it.id}">${escHtml(it.name)} (${it.stockQty} ${escHtml(it.unit)})</option>`).join("");
   }
-  sel.disabled = false;
-  sel.innerHTML = INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("");
+  refreshLineSelects();
 }
 
 async function refreshInventory(){
@@ -242,65 +330,130 @@ async function refreshInventory(){
 }
 
 async function deleteItem(id){
-  if(!confirm("Delete this item?")) return;
-  try{ await db.collection("inventory").doc(id).delete(); await refreshInventory(); }
+  const it = INVENTORY_CACHE.find(x => x.id === id);
+  if(!it) return;
+  const okDel = await confirmDelete({
+    title: "Delete item",
+    message: 'This permanently removes "' + it.name + '" from inventory (' + it.stockQty + " " + it.unit + " in stock). Past sales are not affected.",
+    expected: it.name
+  });
+  if(!okDel) return;
+  try{ await db.collection("inventory").doc(id).delete(); await refreshInventory(); toast("Item deleted"); }
   catch(err){ alert(friendlyError(err)); }
 }
 
 /* =====================================================================
    SALES
    ===================================================================== */
+function updateLineSub(div){
+  const sub = div.querySelector(".line-sub");
+  const sel = div.querySelector(".line-item");
+  const qty = parseFloat(div.querySelector(".line-qty").value) || 0;
+  const price = parseFloat(div.querySelector(".line-price").value) || 0;
+  const inv = INVENTORY_CACHE.find(x => x.id === sel.value);
+  if(!inv){ sub.textContent = ""; sub.classList.remove("warn"); return; }
+  let requested = 0;
+  document.querySelectorAll("#sale-lines [data-line]").forEach(d => {
+    if(d.querySelector(".line-item").value === inv.id) requested += parseFloat(d.querySelector(".line-qty").value) || 0;
+  });
+  const over = requested > inv.stockQty;
+  sub.textContent = "In stock: " + inv.stockQty + " " + inv.unit +
+    (qty > 0 ? " · Line total: " + (qty * price).toLocaleString() + " ETB" : "") +
+    (over ? " · ⚠ Not enough stock" : "");
+  sub.classList.toggle("warn", over);
+}
+
 function addSaleLine(){
   const wrap = document.getElementById("sale-lines");
   const div = document.createElement("div");
-  div.className = "grid2";
+  div.className = "sale-line";
   div.setAttribute("data-line", "1");
   div.innerHTML = `
-    <div class="field">
-      <label>Item</label>
-      <select class="line-item" required>
-        <option value="">-- Select --</option>
-        ${INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("")}
-      </select>
-    </div>
-    <div class="field">
-      <label>Quantity and price</label>
-      <div style="display:flex;gap:8px">
-        <input type="number" step="any" class="line-qty" placeholder="Qty" required style="width:50%">
-        <input type="number" step="any" class="line-price" placeholder="Price" required style="width:50%">
-      </div>
-    </div>
+    <div class="field"><label>Item</label>
+      <select class="line-item" required>${itemOptionsHTML()}</select></div>
+    <div class="field"><label>Quantity</label>
+      <input type="number" step="any" min="0" class="line-qty" placeholder="0" required></div>
+    <div class="field"><label>Price per unit (ETB)</label>
+      <input type="number" step="any" min="0" class="line-price" placeholder="0" required></div>
+    <button type="button" class="btn btn-danger btn-sm line-remove" title="Remove this line">✕ Remove</button>
+    <p class="line-sub"></p>
   `;
   wrap.appendChild(div);
-  div.querySelectorAll(".line-qty, .line-price").forEach(el => el.addEventListener("input", updateSaleTotal));
+  const upd = () => {
+    document.querySelectorAll("#sale-lines [data-line]").forEach(updateLineSub);
+    updateSaleTotal();
+  };
+  div.querySelectorAll(".line-item, .line-qty, .line-price").forEach(el => {
+    el.addEventListener("input", upd);
+    el.addEventListener("change", upd);
+  });
+  div.querySelector(".line-remove").addEventListener("click", () => {
+    if(document.querySelectorAll("#sale-lines [data-line]").length > 1) div.remove();
+    else { div.querySelector(".line-item").value = ""; div.querySelector(".line-qty").value = ""; div.querySelector(".line-price").value = ""; }
+    upd();
+  });
 }
 
 function updateSaleTotal(){
   let total = 0;
   document.querySelectorAll("#sale-lines [data-line]").forEach(div => {
-    const qty = parseFloat(div.querySelector(".line-qty").value) || 0;
-    const price = parseFloat(div.querySelector(".line-price").value) || 0;
+    const qty = Math.max(0, parseFloat(div.querySelector(".line-qty").value) || 0);
+    const price = Math.max(0, parseFloat(div.querySelector(".line-price").value) || 0);
     total += qty * price;
   });
-  document.getElementById("sale-total-display").textContent = "Total: " + total.toLocaleString();
+  document.getElementById("sale-total-display").textContent = "Total: " + total.toLocaleString() + " ETB";
 }
 
 function renderSalesTable(){
   const tbody = document.getElementById("sales-tbody");
-  tbody.innerHTML = SALES_CACHE.map(s => {
-    const itemsSummary = (s.items || []).map(it => `${it.name} ×${it.qty}`).join(", ");
-    const delBtn = CURRENT_ROLE === "owner" ? `<button class="btn btn-danger btn-sm" data-del-sale="${s.id}">Delete</button>` : "";
+  tbody.innerHTML = SALES_CACHE.slice(0, 300).map(s => {
+    const itemsSummary = (s.items || []).map(it => `${escHtml(it.name)} ×${it.qty}`).join(", ");
+    const pdfBtn = `<button class="btn btn-outline btn-sm" data-pdf-sale="${s.id}" title="Download invoice (PDF)">PDF</button>`;
+    const delBtn = CURRENT_ROLE === "owner" ? ` <button class="btn btn-danger btn-sm" data-del-sale="${s.id}">Delete</button>` : "";
     return `<tr>
       <td>${s.date || ""}</td>
       <td>${itemsSummary}</td>
       <td>${(s.total || 0).toLocaleString()}</td>
-      <td>${s.customerName || "-"}</td>
-      <td>${s.recordedByName || ""}</td>
-      <td>${delBtn}</td>
+      <td>${escHtml(s.customerName) || "-"}</td>
+      <td>${escHtml(s.recordedByName)}</td>
+      <td style="white-space:nowrap">${pdfBtn}${delBtn}</td>
     </tr>`;
   }).join("");
+  tbody.querySelectorAll("[data-pdf-sale]").forEach(b => b.addEventListener("click", () => downloadInvoice(b.dataset.pdfSale)));
   if(CURRENT_ROLE === "owner"){
     tbody.querySelectorAll("[data-del-sale]").forEach(b => b.addEventListener("click", () => deleteSale(b.dataset.delSale)));
+  }
+}
+
+async function downloadInvoice(id){
+  const sale = SALES_CACHE.find(x => x.id === id);
+  if(!sale) return;
+  const s = JSON.parse(JSON.stringify(sale));
+  s.id = id;
+  s.items = (s.items || []).map(it => {
+    if(!it.unit){ const inv = INVENTORY_CACHE.find(x => x.id === it.productId); if(inv) it.unit = inv.unit; }
+    return it;
+  });
+  try{
+    toast("Preparing invoice…");
+    await EC_INVOICE.download(s);
+    toast("Invoice downloaded ✓");
+  }catch(err){
+    console.error(err);
+    toast("Could not create the PDF", true);
+    alert(friendlyError(err));
+  }
+}
+
+/* ---------- Sales: list / analytics switch (owner only) ---------- */
+let SALES_VIEW = "list";
+function showSalesView(view){
+  SALES_VIEW = view;
+  document.getElementById("sales-list-view").style.display = view === "list" ? "block" : "none";
+  document.getElementById("sales-stats-panel").style.display = view === "stats" ? "block" : "none";
+  document.querySelectorAll("[data-sales-view]").forEach(b => b.classList.toggle("active", b.dataset.salesView === view));
+  if(view === "stats"){
+    EC_STATS.mount(document.getElementById("sales-stats-panel"), () => ({ sales: SALES_CACHE, inventory: INVENTORY_CACHE }));
   }
 }
 
@@ -312,28 +465,42 @@ async function refreshAfterSale(){
   populateAdjustSelect();
   renderSalesTable();
   if(CURRENT_ROLE === "owner") renderDashboard();
+  if(SALES_VIEW === "stats" && CURRENT_ROLE === "owner") EC_STATS.refresh();
 }
 
 async function deleteSale(id){
-  if(!confirm("Delete this sale? The stock will be restored.")) return;
+  const sale = SALES_CACHE.find(x => x.id === id);
+  if(!sale) return;
+  const invNo = EC_INVOICE.invoiceNumber(sale);
+  const summary = (sale.items || []).map(it => it.name + " ×" + it.qty).join(", ");
+  const okDel = await confirmDelete({
+    title: "Delete sale",
+    message: "Invoice " + invNo + (sale.customerName ? " for " + sale.customerName : "") + " (" + summary + ", total " + (sale.total || 0).toLocaleString() + " ETB). The stock will be restored.",
+    expected: invNo
+  });
+  if(!okDel) return;
   try{
     await db.runTransaction(async tx => {
       const saleRef = db.collection("sales").doc(id);
       const saleDoc = await tx.get(saleRef);
       if(!saleDoc.exists) return;
       const items = saleDoc.data().items || [];
-      const refs = items.map(it => db.collection("inventory").doc(it.productId));
+      // merge repeated items so each product is restored once, with the full quantity
+      const totals = {};
+      items.forEach(it => { totals[it.productId] = (totals[it.productId] || 0) + (Number(it.qty) || 0); });
+      const ids = Object.keys(totals);
+      const refs = ids.map(pid => db.collection("inventory").doc(pid));
       const docs = [];
       for(const r of refs) docs.push(await tx.get(r));
       docs.forEach((doc, i) => {
         if(doc.exists){
-          const newQty = (doc.data().stockQty || 0) + items[i].qty;
-          tx.update(refs[i], { stockQty: newQty, updatedAt: new Date().toISOString() });
+          tx.update(refs[i], { stockQty: (doc.data().stockQty || 0) + totals[ids[i]], updatedAt: new Date().toISOString() });
         }
       });
       tx.delete(saleRef);
     });
     await refreshAfterSale();
+    toast("Sale deleted and stock restored");
   }catch(err){ alert(friendlyError(err)); }
 }
 
@@ -342,7 +509,7 @@ async function deleteSale(id){
    ===================================================================== */
 function renderDashboard(){
   const now = new Date();
-  const ym = now.toISOString().slice(0,7);
+  const ym = localDate().slice(0,7);
   const monthSales = SALES_CACHE.filter(s => (s.date || "").startsWith(ym));
   const revenue = monthSales.reduce((sum, s) => sum + (s.total || 0), 0);
   const lowItems = INVENTORY_CACHE.filter(it => it.stockQty <= (it.lowStockThreshold || 0));
@@ -439,6 +606,7 @@ function openCustomerForm(customer){
     form.elements.name.value = customer.name || "";
     form.phone.value = customer.phone || "";
     form.address.value = customer.address || "";
+    form.tin.value = customer.tin || "";
   }
   document.getElementById("customer-form-panel").style.display = "block";
   document.getElementById("customer-form-panel").scrollIntoView({ behavior: "smooth" });
@@ -460,7 +628,7 @@ function populateSaleCustomerSelect(){
   const sel = document.getElementById("sale-customer-select");
   if(!sel) return;
   sel.innerHTML = `<option value="">-- or type freely below --</option>` +
-    CUSTOMERS_CACHE.map(c => `<option value="${c.id}">${c.name}${c.phone ? " ("+c.phone+")" : ""}</option>`).join("");
+    CUSTOMERS_CACHE.map(c => `<option value="${c.id}">${escHtml(c.name)}${c.phone ? " ("+escHtml(c.phone)+")" : ""}</option>`).join("");
 }
 
 async function refreshCustomers(){
@@ -470,8 +638,15 @@ async function refreshCustomers(){
 }
 
 async function deleteCustomer(id){
-  if(!confirm("Delete this customer?")) return;
-  try{ await db.collection("customers").doc(id).delete(); await refreshCustomers(); }
+  const c = CUSTOMERS_CACHE.find(x => x.id === id);
+  if(!c) return;
+  const okDel = await confirmDelete({
+    title: "Delete customer",
+    message: 'This permanently removes the customer "' + c.name + '". Their past sales stay in the sales list.',
+    expected: c.name
+  });
+  if(!okDel) return;
+  try{ await db.collection("customers").doc(id).delete(); await refreshCustomers(); toast("Customer deleted"); }
   catch(err){ alert(friendlyError(err)); }
 }
 
@@ -516,8 +691,15 @@ async function refreshSuppliers(){
   populateSupplierSelect();
 }
 async function deleteSupplier(id){
-  if(!confirm("Delete this supplier?")) return;
-  try{ await db.collection("suppliers").doc(id).delete(); await refreshSuppliers(); }
+  const s = SUPPLIERS_CACHE.find(x => x.id === id);
+  if(!s) return;
+  const okDel = await confirmDelete({
+    title: "Delete supplier",
+    message: 'This permanently removes the supplier "' + s.name + '".',
+    expected: s.name
+  });
+  if(!okDel) return;
+  try{ await db.collection("suppliers").doc(id).delete(); await refreshSuppliers(); toast("Supplier deleted"); }
   catch(err){ alert(friendlyError(err)); }
 }
 
@@ -531,7 +713,7 @@ function addPOLine(){
       <label>Item</label>
       <select class="po-line-item" required>
         <option value="">-- Select --</option>
-        ${INVENTORY_CACHE.map(it => `<option value="${it.id}">${it.name} (${it.stockQty} ${it.unit})</option>`).join("")}
+        ${INVENTORY_CACHE.map(it => `<option value="${it.id}">${escHtml(it.name)} (${it.stockQty} ${escHtml(it.unit)})</option>`).join("")}
       </select>
     </div>
     <div class="field">
@@ -732,6 +914,7 @@ async function toggleStaffActive(uid){
 
 /* ---------- all form/button wiring, registered once ---------- */
 function initHandlers(){
+  document.querySelectorAll("[data-sales-view]").forEach(b => b.addEventListener("click", () => showSalesView(b.dataset.salesView)));
   document.getElementById("add-item-btn").addEventListener("click", () => openItemForm(null));
   document.getElementById("cancel-item-btn").addEventListener("click", () => {
     document.getElementById("item-form-panel").style.display = "none";
@@ -747,6 +930,7 @@ function initHandlers(){
       updatedAt: new Date().toISOString()
     };
     try{
+      const wasEdit = !!editingItemId;
       if(editingItemId){
         await db.collection("inventory").doc(editingItemId).update(data);
       } else {
@@ -755,9 +939,20 @@ function initHandlers(){
       }
       document.getElementById("item-form-panel").style.display = "none";
       await refreshInventory();
+      toast(wasEdit ? "Item updated ✓" : "Item added ✓");
     }catch(err){ alert(friendlyError(err)); }
   });
 
+  document.getElementById("adjust-open-btn").addEventListener("click", () => {
+    populateAdjustSelect();
+    const p = document.getElementById("adjust-form-panel");
+    p.style.display = "block";
+    p.scrollIntoView({ behavior: "smooth" });
+  });
+  document.getElementById("cancel-adjust-btn").addEventListener("click", () => {
+    document.getElementById("adjust-form").reset();
+    document.getElementById("adjust-form-panel").style.display = "none";
+  });
   document.getElementById("adjust-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
@@ -774,18 +969,22 @@ function initHandlers(){
         tx.update(ref, { stockQty: newQty, updatedAt: new Date().toISOString() });
       });
       f.reset();
+      document.getElementById("adjust-form-panel").style.display = "none";
       await refreshInventory();
+      toast("Stock updated ✓");
     }catch(err){ alert(friendlyError(err)); }
   });
 
   document.getElementById("add-sale-btn").addEventListener("click", () => {
     if(!INVENTORY_CACHE.length){ alert("Please register an item in the Inventory tab first."); return; }
+    if(SALES_VIEW !== "list") showSalesView("list");
     document.getElementById("sale-form").reset();
     document.getElementById("sale-lines").innerHTML = "";
     selectedSaleCustomerId = "";
     addSaleLine();
     updateSaleTotal();
     document.getElementById("sale-form-panel").style.display = "block";
+    document.getElementById("sale-form-panel").scrollIntoView({ behavior: "smooth" });
   });
   document.getElementById("cancel-sale-btn").addEventListener("click", () => {
     document.getElementById("sale-form-panel").style.display = "none";
@@ -796,29 +995,35 @@ function initHandlers(){
     const c = CUSTOMERS_CACHE.find(x => x.id === selectedSaleCustomerId);
     document.getElementById("sale-customer-name").value = c ? (c.name || "") : "";
     document.getElementById("sale-customer-phone").value = c ? (c.phone || "") : "";
+    document.getElementById("sale-customer-tin").value = c ? (c.tin || "") : "";
   });
 
   document.getElementById("sale-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
     const items = [];
+    let invalid = false;
     document.querySelectorAll("#sale-lines [data-line]").forEach(div => {
       const sel = div.querySelector(".line-item");
-      const opt = sel.selectedOptions[0];
-      const qty = parseFloat(div.querySelector(".line-qty").value) || 0;
-      const price = parseFloat(div.querySelector(".line-price").value) || 0;
-      if(sel.value && qty > 0){
-        items.push({ productId: sel.value, name: opt.textContent, qty, unitPrice: price, lineTotal: qty * price });
-      }
+      const rawQty = div.querySelector(".line-qty").value;
+      const rawPrice = div.querySelector(".line-price").value;
+      const qty = parseFloat(rawQty) || 0;
+      const price = parseFloat(rawPrice) || 0;
+      if(!sel.value && !rawQty && !rawPrice) return;            // empty line: ignore
+      if(!sel.value || qty <= 0 || price < 0){ invalid = true; return; }
+      const inv = INVENTORY_CACHE.find(x => x.id === sel.value);
+      items.push({ productId: sel.value, name: inv ? inv.name : sel.selectedOptions[0].textContent, unit: inv ? inv.unit : "", qty, unitPrice: price, lineTotal: qty * price });
     });
+    if(invalid){ alert("Each line needs an item, a quantity greater than 0, and a price that is not negative."); return; }
     if(!items.length){ alert("Select at least one item."); return; }
     const total = items.reduce((s, x) => s + x.lineTotal, 0);
     const sale = {
-      date: new Date().toISOString().slice(0,10),
+      date: localDate(),
       items, total,
       customerId: selectedSaleCustomerId || null,
       customerName: f.customerName.value.trim(),
-      customerPhone: f.customerPhone.value.trim(),
+      customerPhone: f.customerPhone.value.trim().replace(/[,\s]+$/, ""),
+      customerTin: f.customerTin.value.trim(),
       notes: f.notes.value.trim(),
       recordedByName: CURRENT_NAME,
       recordedByUid: CURRENT_UID,
@@ -826,19 +1031,26 @@ function initHandlers(){
     };
     try{
       await db.runTransaction(async (tx) => {
-        const refs = items.map(it => db.collection("inventory").doc(it.productId));
+        // merge repeated items so the same product on two lines is deducted fully
+        const totals = {};
+        items.forEach(it => { totals[it.productId] = (totals[it.productId] || 0) + it.qty; });
+        const ids = Object.keys(totals);
+        const refs = ids.map(id => db.collection("inventory").doc(id));
         const docs = [];
         for(const r of refs) docs.push(await tx.get(r));
         docs.forEach((doc, i) => {
-          if(!doc.exists) throw new Error("Item not found: " + items[i].name);
-          const newQty = (doc.data().stockQty || 0) - items[i].qty;
-          tx.update(refs[i], { stockQty: newQty, updatedAt: new Date().toISOString() });
+          const nm = (items.find(x => x.productId === ids[i]) || {}).name;
+          if(!doc.exists) throw new Error("Item not found: " + nm);
+          const have = doc.data().stockQty || 0;
+          if(totals[ids[i]] > have) throw new Error("Not enough stock for " + nm + ". Available: " + have + ", requested: " + totals[ids[i]]);
+          tx.update(refs[i], { stockQty: have - totals[ids[i]], updatedAt: new Date().toISOString() });
         });
         const saleRef = db.collection("sales").doc();
         tx.set(saleRef, sale);
       });
       document.getElementById("sale-form-panel").style.display = "none";
       await refreshAfterSale();
+      toast("Sale saved ✓ — use the PDF button to download the invoice");
     }catch(err){ alert(friendlyError(err)); }
   });
 
@@ -849,7 +1061,7 @@ function initHandlers(){
   document.getElementById("customer-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = e.target;
-    const data = { name: f.elements.name.value.trim(), phone: f.phone.value.trim(), address: f.address.value.trim() };
+    const data = { name: f.elements.name.value.trim(), phone: f.phone.value.trim().replace(/[,\s]+$/, ""), address: f.address.value.trim(), tin: f.tin.value.trim() };
     try{
       if(editingCustomerId){
         await db.collection("customers").doc(editingCustomerId).update(data);
